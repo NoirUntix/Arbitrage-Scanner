@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#090909;--s1:#0f0f0f;--s2:#141414;--s3:#1a1a1a;--s4:#202020;
+  --bg:#090909;--s1:#0f0f0f;--s2:#141414;--s3:#1a1a1a;
   --b1:#1e1e1e;--b2:#282828;--b3:#333;
   --t1:#f0f0f0;--t2:#999;--t3:#555;--t4:#333;
   --green:#16a34a;--gbg:#071a0e;--gbr:rgba(22,163,74,.2);
@@ -38,8 +38,7 @@ a{color:inherit;text-decoration:none}
 
 /* ── HEADER ── */
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--b1);flex-wrap:wrap;gap:10px}
-.brand{display:flex;align-items:center;gap:0}
-.brand-name{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.5px;color:var(--t1)}
+.brand-name{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.5px}
 .brand-sub{font-size:10px;color:var(--t3);margin-top:2px}
 .hdr-r{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .pulse{width:6px;height:6px;border-radius:50%;background:var(--t4)}
@@ -51,19 +50,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .slabel{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.5px}
 #next-scan,#last-upd,#scan-ctr{font-size:10px;color:var(--t4);font-family:var(--mono)}
 
-/* ── STATS — no dividers ── */
+/* ── STATS ── */
 .stats{display:flex;flex-wrap:nowrap;overflow-x:auto;padding:2px 0;gap:0}
 .stat{padding:10px 20px 10px 0;flex-shrink:0;min-width:80px}
 .slbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
 .sval{font-family:var(--mono);font-size:17px;font-weight:600;color:var(--t1)}
-.sval.g{color:var(--green)}.sval.y{color:var(--yellow)}.sval.r{color:var(--red)}
+.sval.g{color:var(--green)}.sval.y{color:var(--yellow)}.sval.r{color:var(--red)}.sval.o{color:var(--orange)}
 
 /* ── TABS ── */
 .tabs{display:flex;border-bottom:1px solid var(--b1);overflow-x:auto;margin-top:6px}
 .tab{padding:12px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap;user-select:none}
 .tab:hover{color:var(--t2)}.tab.on{color:var(--t1);border-bottom-color:var(--t1)}
-.tab.unstable-tab{color:var(--orange)}
-.tab.unstable-tab.on{border-bottom-color:var(--orange)}
+.tab.tab-unstable{color:var(--t3)}
+.tab.tab-unstable.on{border-bottom-color:var(--orange);color:var(--orange)}
+.tab.tab-unstable.has-items{color:var(--orange)}
 .panel{display:none}.panel.on{animation:panelIn .18s ease forwards;display:block}
 @keyframes panelIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -77,15 +77,19 @@ input[type=number]{width:70px;background:var(--s2);border:1px solid var(--b2);bo
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]:focus{border-color:var(--b3)}
 input[type=time]{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:4px 8px;font-family:var(--mono);font-size:11px;color:var(--t1);outline:none;flex-shrink:0;color-scheme:dark}
-input[type=time]:focus{border-color:var(--b3)}
 select{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:4px 8px;font-family:var(--mono);font-size:11px;color:var(--t1);outline:none;cursor:pointer;flex-shrink:0}
-select:focus{border-color:var(--b3)}
-.chip{padding:3px 10px;border:1px solid var(--b2);border-radius:20px;font-size:10px;color:var(--t3);cursor:pointer;background:transparent;font-family:var(--font);transition:all .15s;white-space:nowrap;user-select:none;line-height:1.6}
+
+/* ── CHIPS ── */
+.chip{padding:3px 10px;border:1px solid var(--b2);border-radius:20px;font-size:10px;color:var(--t3);cursor:pointer;background:transparent;font-family:var(--font);transition:border-color .15s,color .15s,background .15s;white-space:nowrap;user-select:none;line-height:1.6}
 .chip:hover{color:var(--t2);border-color:var(--b3)}
-.chip.on{color:var(--t1);border-color:rgba(255,255,255,.3);background:var(--s3)}
-/* 3-state exchange chips */
+/* Active filter states */
+.chip.f-active{color:var(--green);border-color:var(--green);background:var(--gbg)}
+/* "Hide trust" chips — when ON they are exclusions, show red */
+.chip.f-exclude{color:var(--red);border-color:var(--red);background:var(--rbg)}
+/* Exchange 3-state */
 .chip.ex-included{color:var(--green);border-color:var(--green);background:var(--gbg)}
 .chip.ex-excluded{color:var(--red);border-color:var(--red);background:var(--rbg)}
+/* Misc */
 .chip.reset{color:var(--t3);border-color:var(--b2)}
 .chip.reset:hover{color:var(--red);border-color:var(--red)}
 .chip.freeze{color:var(--t3)}.chip.freeze.on{color:var(--blue);border-color:var(--blue);background:rgba(59,130,246,.1)}
@@ -97,8 +101,8 @@ table{width:100%;border-collapse:collapse}
 thead th{padding:8px 12px;text-align:left;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--t3);border-bottom:1px solid var(--b1);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
 thead th:hover{color:var(--t2)}
 thead th.sorted{color:var(--t1)}
-thead th.sorted::after{content:' ↓';font-size:8px}
-thead th.sorted.asc::after{content:' ↑'}
+thead th.sorted::after{content:' v';font-size:8px}
+thead th.sorted.asc::after{content:' ^'}
 tbody tr{border-bottom:1px solid rgba(30,30,30,.8);transition:background .08s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:rgba(255,255,255,.02)}
@@ -109,7 +113,7 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 .sp.lo{color:var(--t3)}.sp.mid{color:var(--yellow)}.sp.hi{color:var(--red)}
 .consolidation{font-family:var(--mono);font-size:11px;color:var(--blue)}
 .exbadge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;background:var(--s3);border:1px solid var(--b2);color:var(--t2);transition:all .15s}
-.exlink{display:inline-flex;align-items:center}
+.exlink{display:inline-flex}
 .exlink:hover .exbadge{border-color:var(--b3);color:var(--t1)}
 .tdot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0}
 .tdot.high{background:var(--green)}.tdot.medium{background:var(--yellow)}.tdot.low{background:var(--red)}
@@ -119,13 +123,13 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 .badge.ok{color:var(--t4);border:1px solid var(--b1)}
 .badge.stable{background:var(--gbg);color:var(--green);border:1px solid var(--gbr)}
 .badge.unstable-badge{background:var(--obg);color:var(--orange);border:1px solid var(--obr)}
+.badge.locked-badge{background:#1a0e00;color:#fb923c;border:1px solid rgba(251,146,60,.3)}
 .badge.spread-t{background:var(--bbg);color:var(--blue);border:1px solid var(--bbr)}
 .badge.funding-t{background:var(--ybg);color:var(--yellow);border:1px solid var(--ybr)}
 .flash td{animation:rowFlash .4s ease}
 @keyframes rowFlash{0%{background:rgba(59,130,246,.12)}100%{background:transparent}}
-.frozen{opacity:.8}
 
-/* ── FUNDING TABLE ── */
+/* ── FUNDING ── */
 .fr{font-family:var(--mono);font-size:11px;font-weight:500}
 .fr.p{color:var(--red)}.fr.n{color:var(--green)}.fr.z{color:var(--t3)}
 
@@ -142,36 +146,40 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 .opp-row{display:flex;justify-content:space-between;align-items:center}
 .opp-rl{color:var(--t3)}.opp-rv{color:var(--t2);font-family:var(--mono)}
 
-/* ── UNSTABLE PANEL ── */
-.unstable-info{padding:10px 14px;background:var(--obg);border:1px solid var(--obr);border-radius:var(--r);margin:8px 0;font-size:11px;color:var(--orange)}
+/* ── UNSTABLE ── */
+.unstable-info{padding:10px 14px;background:var(--obg);border:1px solid var(--obr);border-radius:var(--r);margin:8px 0;font-size:11px;color:var(--orange);line-height:1.6}
+.locked-info{padding:10px 14px;background:#100a00;border:1px solid rgba(251,146,60,.25);border-radius:var(--r);margin:8px 0;font-size:11px;color:#fb923c;line-height:1.6}
 .unstable-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;padding:8px 0}
 .unstable-card{background:var(--s1);border:1px solid var(--obr);border-radius:var(--r);padding:14px}
-.unstable-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.alert-id{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.5px}
-.range-bar{width:100%;height:3px;background:var(--b2);border-radius:2px;margin:8px 0;overflow:hidden}
-.range-fill{height:100%;background:var(--orange);border-radius:2px}
+.locked-card{background:#0e0800;border:1px solid rgba(251,146,60,.3);border-radius:var(--r);padding:14px}
+.unstable-card-hdr,.locked-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 
 /* ── EXCHANGE HEALTH ── */
-.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:8px 0}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:8px 0}
 .ex-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:0}
 .ex-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .ex-name{font-size:13px;font-weight:600}
+.ex-checked{font-size:9px;color:var(--t4);font-family:var(--mono)}
 .wbadge{padding:3px 9px;border-radius:10px;font-size:9px;font-weight:600;letter-spacing:.3px}
 .wbadge.normal{background:var(--gbg);color:var(--green);border:1px solid var(--gbr)}
 .wbadge.caution{background:var(--ybg);color:var(--yellow);border:1px solid var(--ybr)}
 .wbadge.warning{background:var(--rbg);color:var(--red);border:1px solid var(--rbr)}
+.wbadge.unknown{background:var(--s3);color:var(--t3);border:1px solid var(--b2)}
 .ex-rows{display:flex;flex-direction:column;gap:6px;flex:1}
-.ex-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
-.ex-rl{color:var(--t3)}.ex-rv{color:var(--t2)}
+.ex-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:11px;gap:8px}
+.ex-rl{color:var(--t3);flex-shrink:0}
+.ex-rv{color:var(--t2);text-align:right}
 .trust-lbl{font-size:11px;font-weight:500}
 .trust-lbl.high{color:var(--green)}.trust-lbl.medium{color:var(--yellow)}.trust-lbl.low{color:var(--red)}
-.ex-note{margin-top:8px;margin-bottom:10px;font-size:11px;color:var(--t3);line-height:1.5}
-.ex-links{display:flex;gap:6px;margin-top:auto}
+.ex-note{margin-top:8px;font-size:10px;color:var(--t3);line-height:1.5;border-top:1px solid var(--b1);padding-top:8px}
+.ex-details{margin-top:6px;display:flex;flex-direction:column;gap:3px}
+.ex-detail-item{font-size:9px;color:var(--t4);font-family:var(--mono)}
+.ex-links{display:flex;gap:6px;margin-top:10px}
 .ex-lnk{flex:1;padding:6px;text-align:center;border:1px solid var(--b2);border-radius:5px;font-size:10px;font-weight:500;color:var(--t3);transition:all .15s}
 .ex-lnk:hover{color:var(--t1);border-color:var(--b3);background:var(--s2)}
 
 /* ── ANALYTICS ── */
-.an-tabs{display:flex;gap:0;border-bottom:1px solid var(--b1)}
+.an-tabs{display:flex;border-bottom:1px solid var(--b1)}
 .an-tab{padding:10px 14px;font-size:11px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
 .an-tab:hover{color:var(--t2)}.an-tab.on{color:var(--t1);border-bottom-color:var(--t1)}
 .an-filter-bar{display:flex;align-items:center;gap:7px;padding:10px 0 8px;flex-wrap:wrap;border-bottom:1px solid var(--b1);margin-bottom:4px}
@@ -194,12 +202,10 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 .tl-bar{height:100%;background:var(--yellow);border-radius:2px;transition:width .3s}
 .tl-val{font-family:var(--mono);color:var(--t2);width:24px;text-align:right}
 .alert-list{display:flex;flex-direction:column;gap:2px;max-height:400px;overflow-y:auto}
-.ar-head{display:grid;grid-template-columns:120px 60px 70px 1fr 80px 60px 80px;gap:6px;padding:6px 8px;font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--b1)}
-.ar-row{display:grid;grid-template-columns:120px 60px 70px 1fr 80px 60px 80px;gap:6px;padding:5px 8px;font-size:10px;border-radius:4px;transition:background .1s}
+.ar-head{display:grid;grid-template-columns:120px 70px 60px 70px 1fr 80px 60px;gap:6px;padding:6px 8px;font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--b1)}
+.ar-row{display:grid;grid-template-columns:120px 70px 60px 70px 1fr 80px 60px;gap:6px;padding:5px 8px;font-size:10px;border-radius:4px;transition:background .1s}
 .ar-row:hover{background:var(--s2)}
 .rec-filter{display:flex;align-items:center;gap:7px;padding:7px 0;flex-wrap:wrap;margin-bottom:4px}
-
-/* ── AI CHAT ── */
 .ai-chat{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden;margin-top:8px}
 .ai-chat-hdr{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--b1);font-size:11px;font-weight:500;gap:8px}
 .ai-chat-badge{padding:1px 6px;border-radius:10px;background:var(--blue);color:#fff;font-size:8px;font-weight:600;letter-spacing:.5px}
@@ -208,21 +214,10 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 .ai-msg.user{align-self:flex-end;background:var(--blue);color:#fff}
 .ai-msg.bot{align-self:flex-start;background:var(--s3);color:var(--t2);border:1px solid var(--b2)}
 .ai-msg.thinking{color:var(--t3);animation:bp 1s ease-in-out infinite}
-.ai-input-row{display:flex;gap:0;border-top:1px solid var(--b1)}
+.ai-input-row{display:flex;border-top:1px solid var(--b1)}
 .ai-input{flex:1;background:transparent;border:none;padding:10px 14px;font-family:var(--font);font-size:11px;color:var(--t1);outline:none}
 .ai-send{padding:0 16px;background:var(--s3);border:none;border-left:1px solid var(--b1);color:var(--t2);font-size:11px;cursor:pointer;transition:all .15s}
 .ai-send:hover{color:var(--t1);background:var(--b2)}
-
-/* ── NEWS ── */
-.news-list{display:flex;flex-direction:column;gap:6px}
-.news-item{display:flex;gap:10px;padding:8px 10px;border-radius:var(--r);transition:background .1s;border:1px solid transparent}
-.news-item:hover{background:var(--s2);border-color:var(--b1)}
-.news-title{font-size:11px;color:var(--t1);line-height:1.4;flex:1}
-.news-meta{font-size:9px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
-.news-kind{padding:1px 5px;border-radius:4px;font-size:8px;font-weight:500}
-.news-kind.tool{background:var(--bbg);color:var(--blue);border:1px solid var(--bbr)}
-.news-kind.news{background:var(--s3);color:var(--t3)}
-.news-kind.search{background:var(--ybg);color:var(--yellow);border:1px solid var(--ybr)}
 </style>
 </head>
 <body>
@@ -233,11 +228,9 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 
 <!-- HEADER -->
 <header>
-  <div class="brand">
-    <div>
-      <div class="brand-name">Futures &amp; Funding Scanner</div>
-      <div class="brand-sub">9 exchanges · 45 coins · UTC · live refresh</div>
-    </div>
+  <div>
+    <div class="brand-name">Futures &amp; Funding Scanner</div>
+    <div class="brand-sub">9 exchanges · 45 coins · UTC · live refresh</div>
   </div>
   <div class="hdr-r">
     <span id="scan-ctr"></span>
@@ -247,13 +240,14 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
   </div>
 </header>
 
-<!-- STATS — no dividers -->
+<!-- STATS -->
 <div class="stats">
   <div class="stat"><div class="slbl">Coins</div><div class="sval" id="s-syms">—</div></div>
   <div class="stat"><div class="slbl">Top Spread</div><div class="sval y" id="s-spread">—</div></div>
   <div class="stat"><div class="slbl">Alerts</div><div class="sval" id="s-alerts">—</div></div>
   <div class="stat"><div class="slbl">Stable</div><div class="sval g" id="s-stable">—</div></div>
-  <div class="stat"><div class="slbl">Unstable</div><div class="sval" id="s-unstable" style="color:var(--orange)">—</div></div>
+  <div class="stat"><div class="slbl">Unstable</div><div class="sval o" id="s-unstable">—</div></div>
+  <div class="stat"><div class="slbl">Locked</div><div class="sval" id="s-locked" style="color:#fb923c">—</div></div>
   <div class="stat"><div class="slbl">Scan time</div><div class="sval" id="s-time">—</div></div>
   <div class="stat"><div class="slbl">Scans</div><div class="sval" id="s-scans">—</div></div>
   <div class="stat"><div class="slbl">UTC time</div><div class="sval" id="s-utc" style="font-size:12px;padding-top:2px">—</div></div>
@@ -263,24 +257,20 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 <div class="tabs">
   <div class="tab on" data-t="spreads">Price Spreads</div>
   <div class="tab" data-t="funding">Funding Rates</div>
-  <div class="tab" data-t="opps">⚡ Opportunities</div>
-  <div class="tab unstable-tab" data-t="unstable">⚠ Unstable</div>
-  <div class="tab" data-t="analytics">📊 Analytics</div>
+  <div class="tab" data-t="opps">Opportunities</div>
+  <div class="tab tab-unstable" data-t="unstable" id="tab-unstable-btn">Unstable</div>
+  <div class="tab" data-t="analytics">Analytics</div>
   <div class="tab" data-t="exchanges">Exchange Health</div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     SPREADS
-════════════════════════════════════════════ -->
+<!-- ════════ SPREADS ════════ -->
 <div class="panel on" id="tab-spreads">
   <div class="bar">
-    <!-- Min spread -->
     <span class="blbl">Min spread:</span>
     <input type="range" id="r-spread" min="0" max="2" step="0.01" value="0">
     <span class="rval" id="rv-spread">0.00%</span>
     <input type="number" id="n-spread" min="0" step="0.01" placeholder="0.00">
     <div class="sep"></div>
-    <!-- Exchange filter — 3 states: click once = include (green), click twice = exclude (red), click 3rd = neutral -->
     <span class="blbl">Exchange:</span>
     <button class="chip" data-sex="Binance">Binance</button>
     <button class="chip" data-sex="Bybit">Bybit</button>
@@ -291,19 +281,19 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
     <button class="chip" data-sex="Bitget">Bitget</button>
     <button class="chip" data-sex="CoinEx">CoinEx</button>
     <button class="chip" data-sex="Bitmart">Bitmart</button>
-    <button class="chip" id="sex-all">ALL</button>
+    <button class="chip reset" id="sex-reset">Reset</button>
     <div class="sep"></div>
+    <span class="blbl">Filter:</span>
     <button class="chip" id="btn-alerts-only">Alerts only</button>
-    <button class="chip" id="btn-stable">Stable</button>
+    <button class="chip" id="btn-stable">Stable only</button>
     <div class="sep"></div>
-    <!-- Trust filters -->
     <span class="blbl">Hide trust:</span>
     <button class="chip" id="btn-hide-high">High</button>
     <button class="chip" id="btn-hide-med">Medium</button>
     <button class="chip" id="btn-hide-low">Low</button>
     <div class="sep"></div>
-    <button class="chip freeze" id="btn-freeze">❄ Freeze</button>
-    <button class="chip reset" id="btn-sp-reset">↺ Reset</button>
+    <button class="chip freeze" id="btn-freeze">Freeze</button>
+    <button class="chip reset" id="btn-sp-reset">Reset all</button>
   </div>
   <div class="tw">
     <table>
@@ -314,7 +304,7 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
         <th>Short on</th>
         <th>Low price</th>
         <th>High price</th>
-        <th data-col="consolidation">Consolidation ($)</th>
+        <th data-col="consolidation">Consolidation $</th>
         <th>Trust</th>
         <th>Status</th>
         <th>Alive</th>
@@ -324,9 +314,7 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     FUNDING
-════════════════════════════════════════════ -->
+<!-- ════════ FUNDING ════════ -->
 <div class="panel" id="tab-funding">
   <div class="bar">
     <span class="blbl">Exchange:</span>
@@ -339,9 +327,8 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
     <button class="chip on" data-fex="Bitget">Bitget</button>
     <button class="chip on" data-fex="CoinEx">CoinEx</button>
     <button class="chip on" data-fex="Bitmart">Bitmart</button>
-    <button class="chip on" id="fex-all">ALL</button>
     <div class="sep"></div>
-    <button class="chip reset" id="btn-fr-reset">↺ Reset</button>
+    <button class="chip reset" id="btn-fr-reset">Reset</button>
   </div>
   <div class="tw">
     <table>
@@ -356,39 +343,33 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     OPPORTUNITIES
-════════════════════════════════════════════ -->
+<!-- ════════ OPPORTUNITIES ════════ -->
 <div class="panel" id="tab-opps">
   <div class="bar">
     <button class="chip" id="btn-trusted">Trusted only</button>
     <button class="chip" id="btn-opp-stable">Stable only</button>
     <div class="sep"></div>
-    <button class="chip reset" id="btn-opp-reset">↺ Reset</button>
+    <button class="chip reset" id="btn-opp-reset">Reset</button>
   </div>
   <div class="opp-grid" id="opp-grid"></div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     UNSTABLE COIN EXCHANGE
-════════════════════════════════════════════ -->
+<!-- ════════ UNSTABLE ════════ -->
 <div class="panel" id="tab-unstable">
   <div class="unstable-info">
-    ⚠ These alerts have been <strong>continuously alive for more than 15 minutes</strong>.
-    This may indicate a persistent structural price difference — not a typical short-lived arbitrage window.
-    Exercise caution: verify liquidity, withdrawal status, and fees before acting.
+    Pairs alive for more than 15 minutes. May indicate structural price difference rather than a short arbitrage window. Verify liquidity and withdrawal status before acting.
+  </div>
+  <div class="locked-info" id="locked-info" style="display:none">
+    <strong>Locked pairs</strong> — spread above 2% persisting over 5 minutes. These are excluded from Total Gross calculations and monitored separately.
   </div>
   <div class="unstable-grid" id="unstable-grid">
     <div style="padding:40px;text-align:center;color:var(--t3);grid-column:1/-1">
-      <div style="font-size:22px;margin-bottom:8px">✅</div>
-      <p style="font-size:11px">No unstable alerts — all spreads normalised within 15 minutes</p>
+      <p style="font-size:11px">No unstable alerts right now</p>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     ANALYTICS
-════════════════════════════════════════════ -->
+<!-- ════════ ANALYTICS ════════ -->
 <div class="panel" id="tab-analytics">
   <div class="an-tabs">
     <div class="an-tab on" data-ap="day">Today</div>
@@ -400,7 +381,7 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
     <select id="an-coin-filter"><option value="">All</option></select>
     <div class="sep"></div>
     <span class="blbl">Type:</span>
-    <button class="chip on" id="an-type-all">All</button>
+    <button class="chip f-active" id="an-type-all">All</button>
     <button class="chip" id="an-type-spread">Spread</button>
     <button class="chip" id="an-type-funding">Funding</button>
     <div class="sep"></div>
@@ -409,20 +390,19 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
     <span class="blbl">to:</span>
     <input type="time" id="an-time-to">
     <div class="sep"></div>
-    <button class="chip on" id="btn-an-apply">Apply</button>
-    <button class="chip reset" id="btn-an-reset">↺ Reset</button>
+    <button class="chip f-active" id="btn-an-apply">Apply</button>
+    <button class="chip reset" id="btn-an-reset">Reset</button>
   </div>
   <div id="an-content"><div style="padding:30px;text-align:center;color:var(--t3)"><div class="spin" style="margin:0 auto 10px"></div><p style="font-size:11px">Loading...</p></div></div>
 </div>
 
-<!-- ════════════════════════════════════════════
-     EXCHANGE HEALTH
-════════════════════════════════════════════ -->
+<!-- ════════ EXCHANGE HEALTH ════════ -->
 <div class="panel" id="tab-exchanges">
-  <div style="padding:8px 0"><div class="ex-grid" id="ex-grid"></div></div>
+  <div style="padding:8px 0 4px;font-size:10px;color:var(--t3)">Live status checks run every 60 seconds against each exchange's public API. Last update shown on each card.</div>
+  <div class="ex-grid" id="ex-grid"></div>
 </div>
 
-</div><!-- /wrap -->
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
@@ -430,53 +410,52 @@ td{padding:8px 12px;white-space:nowrap;vertical-align:middle}
 // ══════════════════════════════════════════════════════════════
 const EXS = ['Binance','Bybit','OKX','MEXC','Gate.io','KuCoin','Bitget','CoinEx','Bitmart'];
 
-let allData    = {};
-let exMeta     = {};
-let scanCount  = 0;
+let allData      = {};
+let exMeta       = {};
+let scanCount    = 0;
 let scanInterval = 2;
-let lastTs     = 0;
-let lastDataTs = 0;   // track cache ts for change detection
+let lastTs       = 0;
+let lastDataTs   = 0;
 
-// Spread filter state
-// 3-state exchange filter: 0=neutral, 1=included(green), 2=excluded(red)
+// Exchange 3-state: 0=neutral, 1=included(green), 2=excluded(red)
 let exFilterState = {};
 EXS.forEach(ex => exFilterState[ex] = 0);
 
-let alertsOnly  = false;
-let stableOnly  = false;
-let hideHigh    = false;
-let hideMed     = false;
-let hideLow     = false;
-let frozen      = false;
-let frozenData  = null;
-let sortCol     = 'spread_pct';
-let sortAsc     = false;
-let sortDir     = -1;
+// Spread filters — all start OFF
+let alertsOnly = false;
+let stableOnly = false;
+let hideHigh   = false;
+let hideMed    = false;
+let hideLow    = false;
+let frozen     = false;
+let frozenData = null;
+let sortCol    = 'spread_pct';
+let sortAsc    = false;
+let sortDir    = -1;
 let prevSpreads = {};
 
-// Funding filter state
+// Funding filter
 let visibleFex = new Set(EXS);
 
-// Opp filter state
-let trustedOnly  = false;
+// Opp filter
+let trustedOnly   = false;
 let oppStableOnly = false;
 
-// Analytics state
-let anPeriod    = 'day';
+// Analytics
+let anPeriod     = 'day';
 let anCoinFilter = '';
 let anTypeFilter = '';
-let anTimeFrom  = '';
-let anTimeTo    = '';
-let anData      = null;
-let _anRecType  = '';
-let _anRecCoin  = '';
-let _anRecMinG  = 0;
-let _anRecFrom  = '';
-let _anRecTo    = '';
+let anTimeFrom   = '';
+let anTimeTo     = '';
+let anData       = null;
+let _recType = '', _recCoin = '', _recMinG = 0, _recFrom = '', _recTo = '';
 
-// Stable tracking — first_seen & last_seen per key
-const stableMap   = new Map();  // key -> first_seen_ts
-const lastSeenMap = new Map();  // key -> last_seen_ts
+// Stable tracking
+const stableMap   = new Map();  // key -> first_seen ms
+const lastSeenMap = new Map();  // key -> last_seen ms
+
+// Locked pairs (spread >2% AND alive >5min) — persist until manually cleared or gone
+const lockedKeys = new Set();
 
 // ══════════════════════════════════════════════════════════════
 // TABS
@@ -487,9 +466,9 @@ document.querySelectorAll('.tab').forEach(t => {
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
     t.classList.add('on');
     document.getElementById('tab-' + t.dataset.t).classList.add('on');
-    if (t.dataset.t === 'analytics') loadAnalytics();
-    if (t.dataset.t === 'exchanges') renderExchanges();
-    if (t.dataset.t === 'unstable')  fetchUnstable();
+    if (t.dataset.t === 'analytics')  loadAnalytics();
+    if (t.dataset.t === 'exchanges')  renderExchanges();
+    if (t.dataset.t === 'unstable')   renderUnstable();
   });
 });
 
@@ -497,10 +476,9 @@ document.querySelectorAll('.tab').forEach(t => {
 // UTC CLOCK
 // ══════════════════════════════════════════════════════════════
 setInterval(() => {
-  document.getElementById('s-utc').textContent =
-    new Date().toUTCString().split(' ')[4];
+  document.getElementById('s-utc').textContent = new Date().toUTCString().split(' ')[4];
   if (!lastTs) return;
-  const r = Math.max(0, scanInterval - (Date.now() / 1000 - lastTs));
+  const r = Math.max(0, scanInterval - (Date.now()/1000 - lastTs));
   document.getElementById('next-scan').textContent = 'next ' + r.toFixed(1) + 's';
 }, 200);
 
@@ -508,32 +486,30 @@ setInterval(() => {
 // STABLE MAP
 // ══════════════════════════════════════════════════════════════
 function updateStableMap() {
-  const now      = Date.now();
+  const now = Date.now();
   const seenKeys = new Set();
-
   Object.values(allData).forEach(d => {
-    const a = d.analysis;
-    if (!a) return;
+    const a = d.analysis; if (!a) return;
     if (a.spread_pct > 0) {
       const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
       if (!stableMap.has(k)) stableMap.set(k, now);
       lastSeenMap.set(k, now);
       seenKeys.add(k);
+      // Check lock condition: spread >2% AND alive >5min
+      const ageMs = now - stableMap.get(k);
+      if (a.spread_pct > 2 && ageMs > 300000) lockedKeys.add(k);
     }
-    (a.funding_opportunities || []).forEach(o => {
+    (a.funding_opportunities||[]).forEach(o => {
       const k = `${d.symbol}_${o.short_exchange}_${o.long_exchange}`;
       if (!stableMap.has(k)) stableMap.set(k, now);
       lastSeenMap.set(k, now);
       seenKeys.add(k);
     });
   });
-
-  // Remove keys not seen recently (30s grace period)
+  // Remove keys gone for >30s
   stableMap.forEach((ts, k) => {
-    const lastSeen = lastSeenMap.get(k) || 0;
-    if (!seenKeys.has(k) && now - lastSeen > 30000) {
-      stableMap.delete(k);
-      lastSeenMap.delete(k);
+    if (!seenKeys.has(k) && now - (lastSeenMap.get(k)||0) > 30000) {
+      stableMap.delete(k); lastSeenMap.delete(k); lockedKeys.delete(k);
     }
   });
 }
@@ -541,10 +517,11 @@ function updateStableMap() {
 function aliveMs(k)     { return stableMap.has(k) ? Date.now() - stableMap.get(k) : 0; }
 function isStable(k)    { const ms = aliveMs(k); return ms >= 15000 && ms < 900000; }
 function isUnstable(k)  { return aliveMs(k) >= 900000; }
+function isLocked(k)    { return lockedKeys.has(k); }
 function aliveStr(k) {
   if (!stableMap.has(k)) return '—';
   const s = Math.round(aliveMs(k) / 1000);
-  return s < 60 ? s + 's' : Math.floor(s / 60) + 'm' + (s % 60 ? ' ' + (s % 60) + 's' : '');
+  return s < 60 ? s + 's' : Math.floor(s/60) + 'm' + (s%60 ? ' ' + (s%60) + 's' : '');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -553,14 +530,15 @@ function aliveStr(k) {
 function renderAll(elapsed) {
   document.getElementById('loader').classList.add('gone');
   const syms = Object.keys(allData);
-  let alerts = 0, maxSpread = 0, stableCnt = 0, unstableCnt = 0;
+  let alerts = 0, maxSpread = 0, stableCnt = 0, unstableCnt = 0, lockedCnt = 0;
   syms.forEach(s => {
     const a = allData[s].analysis;
     if (a.spread_alert) alerts++;
     if (a.spread_pct > maxSpread) maxSpread = a.spread_pct;
     const k = `${s}_${a.min_exchange}_${a.max_exchange}`;
-    if (isStable(k))    stableCnt++;
-    if (isUnstable(k))  unstableCnt++;
+    if (isLocked(k))    lockedCnt++;
+    else if (isUnstable(k)) unstableCnt++;
+    else if (isStable(k))   stableCnt++;
   });
   document.getElementById('s-syms').textContent    = syms.length;
   document.getElementById('s-spread').textContent  = maxSpread.toFixed(3) + '%';
@@ -568,66 +546,49 @@ function renderAll(elapsed) {
   document.getElementById('s-alerts').className    = 'sval ' + (alerts > 0 ? 'r' : '');
   document.getElementById('s-stable').textContent  = stableCnt;
   document.getElementById('s-unstable').textContent = unstableCnt;
+  document.getElementById('s-locked').textContent  = lockedCnt;
   document.getElementById('s-time').textContent    = elapsed ? elapsed + 's' : '—';
   document.getElementById('s-scans').textContent   = scanCount;
-  document.getElementById('last-upd').textContent  = new Date().toLocaleTimeString('en', {hour12: false});
+  document.getElementById('last-upd').textContent  = new Date().toLocaleTimeString('en', {hour12:false});
   document.getElementById('scan-ctr').textContent  = '#' + scanCount;
 
-  // Update unstable tab badge
-  const utab = document.querySelector('[data-t="unstable"]');
-  if (utab) utab.textContent = unstableCnt > 0 ? `⚠ Unstable (${unstableCnt})` : '⚠ Unstable';
+  const utabBtn = document.getElementById('tab-unstable-btn');
+  const total = unstableCnt + lockedCnt;
+  utabBtn.textContent = total > 0 ? `Unstable (${total})` : 'Unstable';
+  utabBtn.classList.toggle('has-items', total > 0);
 
   const sel = document.getElementById('an-coin-filter');
   if (sel && sel.options.length <= 1) {
-    syms.sort().forEach(s => {
-      const o = document.createElement('option');
-      o.value = s; o.textContent = s;
-      sel.appendChild(o);
-    });
+    syms.sort().forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
   }
 
   if (!frozen) renderSpreads();
   renderFunding();
   renderOpps();
-
-  // Re-render unstable tab if it's active
-  if (document.getElementById('tab-unstable').classList.contains('on')) {
-    renderUnstableFromData();
-  }
+  if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
 }
 
 // ══════════════════════════════════════════════════════════════
 // SPREADS
 // ══════════════════════════════════════════════════════════════
 function renderSpreads() {
-  const srcData = frozen && frozenData ? frozenData : allData;
-  const minS    = parseFloat(document.getElementById('n-spread').value);
-  const minSpread = isNaN(minS) || minS < 0 ? 0 : minS;
+  const srcData   = frozen && frozenData ? frozenData : allData;
+  const rawVal    = document.getElementById('n-spread').value;
+  const minSpread = rawVal === '' ? 0 : (parseFloat(rawVal) || 0);
 
-  // Compute included/excluded from 3-state filter
   const included = EXS.filter(ex => exFilterState[ex] === 1);
   const excluded  = EXS.filter(ex => exFilterState[ex] === 2);
 
   let rows = Object.values(srcData)
     .map(d => ({
       symbol:        d.symbol,
-      consolidation: d.analysis.max_price && d.analysis.min_price
-        ? d.analysis.max_price - d.analysis.min_price
-        : 0,
+      consolidation: (d.analysis.max_price && d.analysis.min_price) ? d.analysis.max_price - d.analysis.min_price : 0,
       ...d.analysis,
     }))
     .filter(r => r.spread_pct >= minSpread)
     .filter(r => !alertsOnly || r.spread_alert)
     .filter(r => {
-      // Exclude filter: if exchange is excluded, hide the row
-      if (excluded.includes(r.min_exchange) || excluded.includes(r.max_exchange)) return false;
-      // Include filter: if any included, show only rows with that exchange
-      if (included.length > 0) {
-        return included.includes(r.min_exchange) || included.includes(r.max_exchange);
-      }
-      return true;
-    })
-    .filter(r => {
+      // Hide trust filters — when active, exclude rows matching that trust level
       const wt = worstTrust(r.trust_map, r.min_exchange, r.max_exchange);
       if (hideHigh && wt === 'high')   return false;
       if (hideMed  && wt === 'medium') return false;
@@ -635,29 +596,35 @@ function renderSpreads() {
       return true;
     })
     .filter(r => {
+      // Exchange filter
+      if (excluded.includes(r.min_exchange) || excluded.includes(r.max_exchange)) return false;
+      if (included.length > 0) return included.includes(r.min_exchange) || included.includes(r.max_exchange);
+      return true;
+    })
+    .filter(r => {
       const k = `${r.symbol}_${r.min_exchange}_${r.max_exchange}`;
-      if (stableOnly && !isStable(k)) return false;
-      // Exclude unstable rows from main table — they belong in the unstable tab
+      // Locked pairs go to unstable tab, remove from main list
+      if (isLocked(k)) return false;
+      // Unstable (>15min) also go to unstable tab
       if (isUnstable(k)) return false;
+      if (stableOnly && !isStable(k)) return false;
       return true;
     });
 
-  rows.sort((a, b) => {
+  rows.sort((a,b) => {
     const va = a[sortCol] ?? 0, vb = b[sortCol] ?? 0;
-    return typeof va === 'string' ? sortDir * va.localeCompare(vb) : sortDir * (va - vb);
+    return typeof va === 'string' ? sortDir*va.localeCompare(vb) : sortDir*(va-vb);
   });
 
   const tbody = document.getElementById('spread-body');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div style="padding:36px;text-align:center;color:var(--t3)">
-      <div style="font-size:22px;margin-bottom:8px">📡</div>
-      <p style="font-size:11px">No data matching filters</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="padding:36px;text-align:center;color:var(--t3)">
+      <p style="font-size:11px">No data matching filters</p></td></tr>`;
     return;
   }
-
   tbody.innerHTML = rows.map(r => {
-    const sc       = r.spread_pct >= 0.5 ? 'hi' : r.spread_pct >= 0.15 ? 'mid' : 'lo';
-    const flashCls = prevSpreads[r.symbol] !== undefined && Math.abs(prevSpreads[r.symbol] - r.spread_pct) > 0.05 ? 'flash' : '';
+    const sc      = r.spread_pct >= 0.5 ? 'hi' : r.spread_pct >= 0.15 ? 'mid' : 'lo';
+    const flash   = prevSpreads[r.symbol] !== undefined && Math.abs(prevSpreads[r.symbol] - r.spread_pct) > 0.05 ? 'flash' : '';
     if (!frozen) prevSpreads[r.symbol] = r.spread_pct;
     const wt      = worstTrust(r.trust_map, r.min_exchange, r.max_exchange);
     const minM    = exMeta[r.min_exchange] || {};
@@ -668,44 +635,40 @@ function renderSpreads() {
     const alive   = aliveStr(sKey);
     const stable  = isStable(sKey);
     const consol  = r.consolidation > 0 ? '$' + fp(r.consolidation) : '—';
-    return `<tr class="${flashCls}${frozen ? ' frozen' : ''}">
+    return `<tr class="${flash}${frozen?' frozen':''}">
       <td><span class="coin">${r.symbol}</span></td>
       <td><span class="sp ${sc}">${r.spread_pct.toFixed(4)}%</span></td>
-      <td><a class="exlink" href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_exchange || '—'} ↗</span></a></td>
-      <td><a class="exlink" href="${maxUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.max_exchange || '—'} ↗</span></a></td>
+      <td><a class="exlink" href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_exchange||'—'} +</span></a></td>
+      <td><a class="exlink" href="${maxUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.max_exchange||'—'} +</span></a></td>
       <td class="price-cell">$${fp(r.min_price)}</td>
       <td class="price-cell">$${fp(r.max_price)}</td>
       <td class="consolidation">${consol}</td>
       <td><span class="tdot ${wt}"></span><span style="font-size:10px;color:var(--t2)">${wt}</span></td>
-      <td>${r.spread_alert ? `<span class="badge alert">⚠ Alert</span>` : r.spread_risk ? `<span class="badge warn">⚡ Risk</span>` : `<span class="badge ok">OK</span>`}</td>
-      <td>${stable ? `<span class="badge stable">✓ ${alive}</span>` : `<span style="font-size:10px;color:var(--t4)">${alive}</span>`}</td>
+      <td>${r.spread_alert?`<span class="badge alert">Alert</span>`:r.spread_risk?`<span class="badge warn">Risk</span>`:`<span class="badge ok">OK</span>`}</td>
+      <td>${stable?`<span class="badge stable">${alive}</span>`:`<span style="font-size:10px;color:var(--t4)">${alive}</span>`}</td>
     </tr>`;
   }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
-// FUNDING RATES
+// FUNDING
 // ══════════════════════════════════════════════════════════════
 function renderFunding() {
   const rows = Object.values(allData).map(d => ({
-    symbol:  d.symbol,
-    rates:   d.analysis.funding_rates || {},
-    maxDiff: (d.analysis.funding_opportunities?.[0]?.diff_pct) || 0,
+    symbol: d.symbol, rates: d.analysis.funding_rates||{},
+    maxDiff: (d.analysis.funding_opportunities?.[0]?.diff_pct)||0,
   }));
   const tbody = document.getElementById('funding-body');
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div style="padding:30px;text-align:center;color:var(--t3)">Waiting...</div></td></tr>`;
-    return;
-  }
+  if (!rows.length) { tbody.innerHTML=`<tr><td colspan="11" style="padding:30px;text-align:center;color:var(--t3)">Waiting...</td></tr>`; return; }
   tbody.innerHTML = rows.map(r => {
     const cells = EXS.map(ex => {
       if (!visibleFex.has(ex)) return '';
       const fr = r.rates[ex];
-      if (fr === undefined || fr === null) return `<td><span class="fr z">—</span></td>`;
-      const cls = fr > 0.005 ? 'p' : fr < -0.005 ? 'n' : 'z';
-      return `<td><span class="fr ${cls}">${fr > 0 ? '+' : ''}${fr.toFixed(4)}%</span></td>`;
+      if (fr===undefined||fr===null) return `<td><span class="fr z">—</span></td>`;
+      const cls = fr>0.005?'p':fr<-0.005?'n':'z';
+      return `<td><span class="fr ${cls}">${fr>0?'+':''}${fr.toFixed(4)}%</span></td>`;
     }).join('');
-    const dc = r.maxDiff >= 0.05 ? 'hi' : r.maxDiff >= 0.01 ? 'mid' : 'lo';
+    const dc = r.maxDiff>=0.05?'hi':r.maxDiff>=0.01?'mid':'lo';
     return `<tr><td><span class="coin">${r.symbol}</span></td>${cells}<td><span class="sp ${dc}">${r.maxDiff.toFixed(4)}%</span></td></tr>`;
   }).join('');
 }
@@ -716,44 +679,34 @@ function renderFunding() {
 function renderOpps() {
   const cards = [];
   Object.values(allData).forEach(d => {
-    (d.analysis.funding_opportunities || []).forEach(o => {
-      if (trustedOnly && (o.short_trust !== 'high' || o.long_trust !== 'high')) return;
+    (d.analysis.funding_opportunities||[]).forEach(o => {
+      if (trustedOnly && (o.short_trust!=='high'||o.long_trust!=='high')) return;
       const sKey = `${d.symbol}_${o.short_exchange}_${o.long_exchange}`;
       if (oppStableOnly && !isStable(sKey)) return;
-      cards.push({symbol: d.symbol, ...o, _key: sKey});
+      cards.push({symbol:d.symbol,...o,_key:sKey});
     });
   });
-  cards.sort((a, b) => b.diff_pct - a.diff_pct);
+  cards.sort((a,b) => b.diff_pct - a.diff_pct);
   const grid = document.getElementById('opp-grid');
   if (!cards.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--t3)">
-      <div style="font-size:22px;margin-bottom:8px">🔍</div>
-      <p style="font-size:11px">No opportunities matching filters</p></div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--t3)"><p style="font-size:11px">No opportunities matching filters</p></div>`;
     return;
   }
   grid.innerHTML = cards.map(c => {
-    const dc       = c.diff_pct >= 0.05 ? 'hi' : c.diff_pct < 0.01 ? 'lo' : '';
-    const cardCls  = c.trust_level === 'low' ? 'alert-c' : c.trust_level === 'medium' ? 'warn-c' : '';
-    const riskTxt  = c.trust_level === 'high' ? '🟢 Both high trust' : c.trust_level === 'medium' ? '🟡 Medium trust' : '🔴 Low trust';
-    const sKey     = c._key;
-    const aliveS   = aliveStr(sKey);
-    const stab     = isStable(sKey) ? '<span class="badge stable" style="font-size:8px">✓ Stable</span>' : '';
-    const unstab   = isUnstable(sKey) ? '<span class="badge unstable-badge" style="font-size:8px">⚠ Unstable</span>' : '';
-    const sExM     = exMeta[c.short_exchange] || {};
-    const lExM     = exMeta[c.long_exchange]  || {};
-    const sUrl     = sExM.futures_url ? sExM.futures_url.replace('{symbol}', c.symbol) : '#';
-    const lUrl     = lExM.futures_url ? lExM.futures_url.replace('{symbol}', c.symbol) : '#';
+    const dc      = c.diff_pct>=0.05?'hi':c.diff_pct<0.01?'lo':'';
+    const cardCls = c.trust_level==='low'?'alert-c':c.trust_level==='medium'?'warn-c':'';
+    const riskTxt = c.trust_level==='high'?'Both high trust':c.trust_level==='medium'?'Medium trust':'Low trust';
+    const sExM    = exMeta[c.short_exchange]||{}, lExM=exMeta[c.long_exchange]||{};
+    const sUrl    = sExM.futures_url?sExM.futures_url.replace('{symbol}',c.symbol):'#';
+    const lUrl    = lExM.futures_url?lExM.futures_url.replace('{symbol}',c.symbol):'#';
     return `<div class="opp-card ${cardCls}">
-      <div class="opp-card-hdr">
-        <span class="opp-sym">${c.symbol}</span>
-        <span class="opp-pct ${dc}">+${c.diff_pct.toFixed(4)}%/8h</span>
-      </div>
+      <div class="opp-card-hdr"><span class="opp-sym">${c.symbol}</span><span class="opp-pct ${dc}">+${c.diff_pct.toFixed(4)}%/8h</span></div>
       <div class="opp-rows">
-        <div class="opp-row"><span class="opp-rl">SHORT on</span><a href="${sUrl}" target="_blank" rel="noopener"><span class="exbadge">${c.short_exchange} ↗</span></a></div>
-        <div class="opp-row"><span class="opp-rl">LONG on</span><a href="${lUrl}" target="_blank" rel="noopener"><span class="exbadge">${c.long_exchange} ↗</span></a></div>
+        <div class="opp-row"><span class="opp-rl">SHORT on</span><a href="${sUrl}" target="_blank" rel="noopener"><span class="exbadge">${c.short_exchange} +</span></a></div>
+        <div class="opp-row"><span class="opp-rl">LONG on</span><a href="${lUrl}" target="_blank" rel="noopener"><span class="exbadge">${c.long_exchange} +</span></a></div>
         <div class="opp-row"><span class="opp-rl">Annual est.</span><span class="opp-rv">+${(c.annual_diff_pct||0).toFixed(2)}%</span></div>
         <div class="opp-row"><span class="opp-rl">Trust</span><span class="opp-rv">${riskTxt}</span></div>
-        <div class="opp-row"><span class="opp-rl">Alive</span><span class="opp-rv">${aliveS} ${stab}${unstab}</span></div>
+        <div class="opp-row"><span class="opp-rl">Alive</span><span class="opp-rv">${aliveStr(c._key)}</span></div>
       </div>
     </div>`;
   }).join('');
@@ -762,94 +715,60 @@ function renderOpps() {
 // ══════════════════════════════════════════════════════════════
 // UNSTABLE TAB
 // ══════════════════════════════════════════════════════════════
-function renderUnstableFromData() {
-  const grid = document.getElementById('unstable-grid');
-  const unstableRows = [];
+function renderUnstable() {
+  const grid  = document.getElementById('unstable-grid');
+  const linfo = document.getElementById('locked-info');
+  const unstableRows = [], lockedRows = [];
 
   Object.values(allData).forEach(d => {
-    const a = d.analysis;
-    if (!a) return;
+    const a = d.analysis; if (!a) return;
     const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
-    if (isUnstable(k)) {
-      unstableRows.push({
-        symbol:     d.symbol,
-        type:       'spread',
-        key:        k,
-        min_ex:     a.min_exchange,
-        max_ex:     a.max_exchange,
-        spread_pct: a.spread_pct,
-        min_price:  a.min_price,
-        max_price:  a.max_price,
-        trust:      worstTrust(a.trust_map, a.min_exchange, a.max_exchange),
-      });
+    if (isLocked(k)) {
+      lockedRows.push({symbol:d.symbol, key:k, min_ex:a.min_exchange, max_ex:a.max_exchange,
+        spread_pct:a.spread_pct, min_price:a.min_price, max_price:a.max_price, trust:worstTrust(a.trust_map,a.min_exchange,a.max_exchange)});
+    } else if (isUnstable(k)) {
+      unstableRows.push({symbol:d.symbol, key:k, min_ex:a.min_exchange, max_ex:a.max_exchange,
+        spread_pct:a.spread_pct, min_price:a.min_price, max_price:a.max_price, trust:worstTrust(a.trust_map,a.min_exchange,a.max_exchange)});
     }
   });
 
-  if (!unstableRows.length) {
-    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--t3);grid-column:1/-1">
-      <div style="font-size:22px;margin-bottom:8px">✅</div>
-      <p style="font-size:11px">No unstable alerts — all spreads normalised within 15 minutes</p>
-    </div>`;
+  linfo.style.display = lockedRows.length ? '' : 'none';
+
+  if (!unstableRows.length && !lockedRows.length) {
+    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--t3);grid-column:1/-1"><p style="font-size:11px">No unstable alerts right now</p></div>`;
     return;
   }
 
-  grid.innerHTML = unstableRows.map(r => {
-    const alive = aliveStr(r.key);
-    const minM  = exMeta[r.min_ex] || {};
-    const maxM  = exMeta[r.max_ex] || {};
-    const minUrl = minM.futures_url ? minM.futures_url.replace('{symbol}', r.symbol) : '#';
-    const maxUrl = maxM.futures_url ? maxM.futures_url.replace('{symbol}', r.symbol) : '#';
-    const consol = r.max_price && r.min_price ? '$' + fp(r.max_price - r.min_price) : '—';
-    return `<div class="unstable-card">
-      <div class="unstable-card-hdr">
-        <span class="coin">${r.symbol}</span>
-        <span class="badge unstable-badge">⚠ ${alive}</span>
+  const buildCard = (r, locked) => {
+    const alive   = aliveStr(r.key);
+    const consol  = r.max_price && r.min_price ? '$'+fp(r.max_price-r.min_price) : '—';
+    const minM    = exMeta[r.min_ex]||{}, maxM=exMeta[r.max_ex]||{};
+    const minUrl  = minM.futures_url?minM.futures_url.replace('{symbol}',r.symbol):'#';
+    const maxUrl  = maxM.futures_url?maxM.futures_url.replace('{symbol}',r.symbol):'#';
+    const cls     = locked ? 'locked-card' : 'unstable-card';
+    const badge   = locked
+      ? `<span class="badge locked-badge">LOCKED ${alive}</span>`
+      : `<span class="badge unstable-badge">${alive}</span>`;
+    const excl    = locked ? `<div style="font-size:9px;color:#fb923c;margin-top:6px">Excluded from Total Gross</div>` : '';
+    return `<div class="${cls}">
+      <div class="${cls}-hdr">
+        <span class="coin">${r.symbol}</span>${badge}
       </div>
       <div class="opp-rows">
-        <div class="opp-row"><span class="opp-rl">Long on</span><a href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_ex} ↗</span></a></div>
-        <div class="opp-row"><span class="opp-rl">Short on</span><a href="${maxUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.max_ex} ↗</span></a></div>
+        <div class="opp-row"><span class="opp-rl">Long on</span><a href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_ex} +</span></a></div>
+        <div class="opp-row"><span class="opp-rl">Short on</span><a href="${maxUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.max_ex} +</span></a></div>
         <div class="opp-row"><span class="opp-rl">Spread</span><span class="opp-rv" style="color:var(--orange)">${r.spread_pct.toFixed(4)}%</span></div>
         <div class="opp-row"><span class="opp-rl">Consolidation</span><span class="opp-rv" style="color:var(--blue)">${consol}</span></div>
-        <div class="opp-row"><span class="opp-rl">Low price</span><span class="opp-rv">$${fp(r.min_price)}</span></div>
-        <div class="opp-row"><span class="opp-rl">High price</span><span class="opp-rv">$${fp(r.max_price)}</span></div>
+        <div class="opp-row"><span class="opp-rl">Low / High</span><span class="opp-rv">$${fp(r.min_price)} / $${fp(r.max_price)}</span></div>
         <div class="opp-row"><span class="opp-rl">Trust</span><span class="opp-rv"><span class="tdot ${r.trust}"></span>${r.trust}</span></div>
-      </div>
+      </div>${excl}
     </div>`;
-  }).join('');
-}
+  };
 
-async function fetchUnstable() {
-  renderUnstableFromData();
-  // Also fetch server-side active alerts for range tracking
-  try {
-    const r = await fetch('/api/active_alerts');
-    const d = await r.json();
-    renderUnstableWithAlertData(d.unstable || []);
-  } catch(e) { /* ignore */ }
-}
-
-function renderUnstableWithAlertData(unstableAlerts) {
-  if (!unstableAlerts.length) return;
-  const grid = document.getElementById('unstable-grid');
-  // Merge server-side data with client-side for range info
-  const extras = unstableAlerts.filter(a => a.type === 'spread');
-  if (!extras.length) return;
-
-  // Append range data cards
-  const existingHtml = grid.innerHTML;
-  if (existingHtml.includes('✅')) return; // only empty state
-
-  // Find matching cards and inject range info
-  extras.forEach(a => {
-    const id   = `unstable-card-${a.id}`;
-    const card = grid.querySelector(`[data-alert-id="${a.id}"]`);
-    if (card) {
-      const rangeEl = card.querySelector('.range-fill');
-      if (rangeEl && a.max_pct > 0) {
-        rangeEl.style.width = Math.min(100, (a.range_pct / a.max_pct * 100)).toFixed(1) + '%';
-      }
-    }
-  });
+  grid.innerHTML = [
+    ...lockedRows.map(r => buildCard(r, true)),
+    ...unstableRows.map(r => buildCard(r, false)),
+  ].join('');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -862,19 +781,29 @@ function renderExchanges() {
     return;
   }
   grid.innerHTML = Object.entries(exMeta).map(([name, m]) => {
-    const w   = m.withdrawal || {};
-    const ws  = w.status || 'normal';
-    const ti  = m.trust === 'high' ? '🟢' : m.trust === 'medium' ? '🟡' : '🔴';
+    const h  = m.withdrawal || {};
+    const ws = h.status || 'unknown';
+    const trustLabel = m.trust ? (m.trust.charAt(0).toUpperCase() + m.trust.slice(1)) : '—';
+    const trustCls   = m.trust || 'medium';
+    const details    = (h.details || []).map(d => `<div class="ex-detail-item">${d}</div>`).join('');
+    const checkedAt  = h.checked_at || '—';
+    const futUrl     = m.futures_url ? m.futures_url.replace('{symbol}','BTC') : '#';
+    const wUrl       = m.withdraw_url || '#';
     return `<div class="ex-card">
-      <div class="ex-hdr"><span class="ex-name">${name}</span><span class="wbadge ${ws}">${ws.toUpperCase()}</span></div>
-      <div class="ex-rows">
-        <div class="ex-row"><span class="ex-rl">Trust</span><span class="trust-lbl ${m.trust}">${ti} ${m.trust.charAt(0).toUpperCase() + m.trust.slice(1)}</span></div>
-        <div class="ex-row"><span class="ex-rl">Withdrawals</span><span class="ex-rv">${ws}</span></div>
+      <div class="ex-hdr">
+        <span class="ex-name">${name}</span>
+        <span class="wbadge ${ws}">${ws.toUpperCase()}</span>
       </div>
-      <div class="ex-note">${w.note || '—'}</div>
+      <div class="ex-rows">
+        <div class="ex-row"><span class="ex-rl">Trust level</span><span class="trust-lbl ${trustCls}">${trustLabel}</span></div>
+        <div class="ex-row"><span class="ex-rl">Status</span><span class="ex-rv">${ws}</span></div>
+        <div class="ex-row"><span class="ex-rl">Checked</span><span class="ex-rv ex-checked">${checkedAt}</span></div>
+      </div>
+      <div class="ex-note">${h.note || '—'}</div>
+      ${details ? `<div class="ex-details">${details}</div>` : ''}
       <div class="ex-links">
-        <a class="ex-lnk" href="${(m.futures_url || '#').replace('{symbol}', 'BTC')}" target="_blank" rel="noopener">Futures ↗</a>
-        <a class="ex-lnk" href="${m.withdraw_url || '#'}" target="_blank" rel="noopener">Status ↗</a>
+        <a class="ex-lnk" href="${futUrl}" target="_blank" rel="noopener">Futures</a>
+        <a class="ex-lnk" href="${wUrl}"  target="_blank" rel="noopener">Status page</a>
       </div>
     </div>`;
   }).join('');
@@ -886,17 +815,15 @@ function renderExchanges() {
 document.querySelectorAll('.an-tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.an-tab').forEach(x => x.classList.remove('on'));
-    t.classList.add('on');
-    anPeriod = t.dataset.ap;
-    loadAnalytics();
+    t.classList.add('on'); anPeriod = t.dataset.ap; loadAnalytics();
   });
 });
 document.getElementById('btn-an-apply').addEventListener('click', () => {
   anCoinFilter = document.getElementById('an-coin-filter').value || '';
   anTimeFrom   = document.getElementById('an-time-from').value  || '';
   anTimeTo     = document.getElementById('an-time-to').value    || '';
-  anTypeFilter = document.getElementById('an-type-spread').classList.contains('on') ? 'spread'
-               : document.getElementById('an-type-funding').classList.contains('on') ? 'funding' : '';
+  anTypeFilter = document.getElementById('an-type-spread').classList.contains('f-active') ? 'spread'
+               : document.getElementById('an-type-funding').classList.contains('f-active') ? 'funding' : '';
   loadAnalytics();
 });
 document.getElementById('btn-an-reset').addEventListener('click', () => {
@@ -904,20 +831,18 @@ document.getElementById('btn-an-reset').addEventListener('click', () => {
   document.getElementById('an-time-from').value   = '';
   document.getElementById('an-time-to').value     = '';
   anCoinFilter = ''; anTypeFilter = ''; anTimeFrom = ''; anTimeTo = '';
-  ['an-type-all','an-type-spread','an-type-funding'].forEach((id, i) =>
-    document.getElementById(id).classList.toggle('on', i === 0)
-  );
+  setAnType('');
   loadAnalytics();
 });
-['an-type-all','an-type-spread','an-type-funding'].forEach(id => {
-  document.getElementById(id).addEventListener('click', () => {
-    ['an-type-all','an-type-spread','an-type-funding'].forEach(x =>
-      document.getElementById(x).classList.remove('on')
-    );
-    document.getElementById(id).classList.add('on');
-    anTypeFilter = id === 'an-type-spread' ? 'spread' : id === 'an-type-funding' ? 'funding' : '';
-  });
-});
+function setAnType(t) {
+  anTypeFilter = t;
+  document.getElementById('an-type-all').classList.toggle('f-active', t==='');
+  document.getElementById('an-type-spread').classList.toggle('f-active', t==='spread');
+  document.getElementById('an-type-funding').classList.toggle('f-active', t==='funding');
+}
+document.getElementById('an-type-all').addEventListener('click',     () => setAnType(''));
+document.getElementById('an-type-spread').addEventListener('click',  () => setAnType('spread'));
+document.getElementById('an-type-funding').addEventListener('click',  () => setAnType('funding'));
 
 async function loadAnalytics() {
   const cont = document.getElementById('an-content');
@@ -931,237 +856,111 @@ async function loadAnalytics() {
     if (anTimeFrom || anTimeTo) applyTimeFilter(anData);
     renderAnalytics(anData);
   } catch(e) {
-    cont.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3)"><p>Failed to load analytics</p></div>`;
+    cont.innerHTML = `<div style="padding:30px;text-align:center;color:var(--t3)"><p>Failed to load</p></div>`;
   }
 }
-
 function applyTimeFilter(d) {
   if (!d.records) return;
   d.records = d.records.filter(r => {
-    const t  = new Date(r.ts * 1000);
-    const hm = t.getUTCHours() * 60 + t.getUTCMinutes();
-    if (anTimeFrom) { const [h,m] = anTimeFrom.split(':').map(Number); if (hm < h*60+m) return false; }
-    if (anTimeTo)   { const [h,m] = anTimeTo.split(':').map(Number);   if (hm > h*60+m) return false; }
+    const t = new Date(r.ts*1000), hm = t.getUTCHours()*60+t.getUTCMinutes();
+    if (anTimeFrom) { const [h,m]=anTimeFrom.split(':').map(Number); if(hm<h*60+m) return false; }
+    if (anTimeTo)   { const [h,m]=anTimeTo.split(':').map(Number);   if(hm>h*60+m) return false; }
     return true;
   });
-  d.total_alerts = d.records.length;
-  const qual = d.records.filter(r => (r.potential_pct || 0) >= 0.20);
-  const tot  = qual.reduce((a,r) => a + (r.potential_pct || 0), 0);
-  d.total_potential_pct = r4(tot);
-  d.qualified_alerts    = qual.length;
-  d.avg_potential_pct   = qual.length ? r4(tot / qual.length) : 0;
+  const qual=d.records.filter(r=>(r.potential_pct||0)>=0.20);
+  const tot=qual.reduce((a,r)=>a+(r.potential_pct||0),0);
+  d.total_alerts=d.records.length; d.total_potential_pct=r4(tot);
+  d.qualified_alerts=qual.length; d.avg_potential_pct=qual.length?r4(tot/qual.length):0;
 }
-function r4(v) { return Math.round(v * 10000) / 10000; }
+function r4(v){ return Math.round(v*10000)/10000; }
 
 function renderAnalytics(d) {
-  const cont    = document.getElementById('an-content');
-  const pLbl    = {day:'Today',week:'This Week',month:'This Month'}[anPeriod] || anPeriod;
-  const coinLbl = anCoinFilter ? ` · ${anCoinFilter}` : '';
-  const typeLbl = anTypeFilter ? ` · ${anTypeFilter}` : '';
-
-  if (!d || d.total_alerts === 0) {
-    cont.innerHTML = `<div class="an-cards">
-      <div class="an-card"><div class="lbl">Alerts</div><div class="val">0</div><div class="sub">${pLbl}${coinLbl}${typeLbl}</div></div>
-    </div>
-    <div style="padding:36px;text-align:center;color:var(--t3)">
-      <div style="font-size:26px;margin-bottom:8px">📭</div>
-      <p style="font-size:11px">No alerts recorded for this period.<br>Alerts are logged when spread ≥ 0.15% or funding diff ≥ 0.03%.</p>
-    </div>`;
-    buildAIChat(); loadNews();
-    return;
+  const cont  = document.getElementById('an-content');
+  const pLbl  = {day:'Today',week:'This Week',month:'This Month'}[anPeriod]||anPeriod;
+  if (!d || d.total_alerts===0) {
+    cont.innerHTML = `<div class="an-cards"><div class="an-card"><div class="lbl">Alerts</div><div class="val">0</div><div class="sub">${pLbl}</div></div></div>
+    <div style="padding:36px;text-align:center;color:var(--t3)"><p style="font-size:11px">No alerts recorded for this period.</p></div>`;
+    buildAIChat(); loadNews(); return;
   }
-
   const cards = `<div class="an-cards">
-    <div class="an-card"><div class="lbl">Total alerts</div><div class="val">${d.total_alerts}</div><div class="sub">${pLbl}${coinLbl}${typeLbl}</div></div>
-    <div class="an-card"><div class="lbl">Qualified ≥0.2%</div><div class="val y">${d.qualified_alerts}</div><div class="sub">of ${d.total_alerts} total</div></div>
+    <div class="an-card"><div class="lbl">Total alerts</div><div class="val">${d.total_alerts}</div><div class="sub">${pLbl}</div></div>
+    <div class="an-card"><div class="lbl">Qualified >=0.2%</div><div class="val y">${d.qualified_alerts}</div><div class="sub">of ${d.total_alerts}</div></div>
     <div class="an-card"><div class="lbl">Total gross</div><div class="val g">+${d.total_potential_pct.toFixed(4)}%</div><div class="sub">before fees</div></div>
-    <div class="an-card"><div class="lbl">Avg per alert</div><div class="val">+${d.avg_potential_pct.toFixed(4)}%</div><div class="sub">qualified only</div></div>
+    <div class="an-card"><div class="lbl">Avg per alert</div><div class="val">+${d.avg_potential_pct.toFixed(4)}%</div></div>
     <div class="an-card"><div class="lbl">Spread alerts</div><div class="val">${d.by_type?.spread||0}</div></div>
     <div class="an-card"><div class="lbl">Funding alerts</div><div class="val">${d.by_type?.funding||0}</div></div>
   </div>`;
-
-  const pies    = buildPies(d);
-  const best    = d.best_opportunity;
-  const bestHtml = best ? `<div class="an-section"><h3>Best Opportunity</h3>
-    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:12px 16px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-      <span class="coin">${best.symbol}</span>
-      <span class="badge ${best.type==='spread'?'spread-t':'funding-t'}">${best.type}</span>
-      <span style="font-family:var(--mono);color:var(--green);font-weight:600">+${(best.potential_pct||0).toFixed(4)}%</span>
-      <span style="font-size:10px;color:var(--t3)">${best.type==='spread'?(best.buy_exchange+'→'+best.sell_exchange):(best.long_exchange+'/'+best.short_exchange)}</span>
-      ${best.alert_id ? `<span style="font-family:var(--mono);font-size:9px;color:var(--t4)">[${best.alert_id}]</span>` : ''}
-    </div></div>` : '';
-
-  const tl    = d.timeline || [];
-  const maxC  = Math.max(...tl.map(x => x.count), 1);
-  const tlHtml = tl.slice(-48).map(x =>
-    `<div class="tl-row">
-      <span class="tl-time">${x.time.substring(5,16)}</span>
-      <div class="tl-bw"><div class="tl-bar" style="width:${(x.count/maxC*100).toFixed(1)}%"></div></div>
-      <span class="tl-val">${x.count}</span>
-    </div>`
+  const tl    = d.timeline||[], maxC=Math.max(...tl.map(x=>x.count),1);
+  const tlHtml= tl.slice(-48).map(x=>`<div class="tl-row"><span class="tl-time">${x.time.substring(5,16)}</span><div class="tl-bw"><div class="tl-bar" style="width:${(x.count/maxC*100).toFixed(1)}%"></div></div><span class="tl-val">${x.count}</span></div>`).join('');
+  const symRows=Object.entries(d.by_symbol||{}).map(([s,v])=>
+    `<tr><td><span class="coin">${s}</span></td><td style="font-family:var(--mono);color:var(--t2)">${v.count}</td><td style="font-family:var(--mono);color:var(--t3)">${v.qualified}</td><td style="font-family:var(--mono);color:var(--green)">+${v.total_pct.toFixed(4)}%</td><td style="font-family:var(--mono);color:var(--yellow)">+${v.best_pct.toFixed(4)}%</td></tr>`
   ).join('');
-
-  const symRows = Object.entries(d.by_symbol || {}).map(([s,v]) =>
-    `<tr>
-      <td><span class="coin">${s}</span></td>
-      <td style="font-family:var(--mono);color:var(--t2)">${v.count}</td>
-      <td style="font-family:var(--mono);color:var(--t3)">${v.qualified}</td>
-      <td style="font-family:var(--mono);color:var(--green)">+${v.total_pct.toFixed(4)}%</td>
-      <td style="font-family:var(--mono);color:var(--yellow)">+${v.best_pct.toFixed(4)}%</td>
-    </tr>`
-  ).join('');
-
-  cont.innerHTML = `
-    ${cards}
-    <div class="an-section"><h3>Distribution</h3>${pies}</div>
-    ${bestHtml}
-    <div class="an-section"><h3>Timeline (UTC)</h3>
-      <div class="timeline">${tlHtml || '<div style="padding:16px;color:var(--t3);font-size:11px">No data</div>'}</div>
-    </div>
-    <div class="an-section"><h3>By Coin</h3>
-      <div class="tw"><table>
-        <thead><tr><th>Coin</th><th>Total</th><th>Qualified</th><th>Total Gross %</th><th>Best %</th></tr></thead>
-        <tbody>${symRows}</tbody>
-      </table></div>
-    </div>
+  cont.innerHTML = `${cards}
+    <div class="an-section"><h3>Timeline (UTC)</h3><div class="timeline">${tlHtml||'<div style="padding:16px;color:var(--t3);font-size:11px">No data</div>'}</div></div>
+    <div class="an-section"><h3>By Coin</h3><div class="tw"><table>
+      <thead><tr><th>Coin</th><th>Total</th><th>Qualified</th><th>Total Gross</th><th>Best</th></tr></thead>
+      <tbody>${symRows}</tbody>
+    </table></div></div>
     <div class="an-section"><h3>Alert Records</h3>
       ${buildRecFilterBar(d)}
-      <div class="ar-head"><span>Time (UTC)</span><span>ID</span><span>Coin</span><span>Type</span><span>Pair</span><span>Gross %</span><span>Trust</span></div>
+      <div class="ar-head"><span>Time UTC</span><span>ID</span><span>Coin</span><span>Type</span><span>Pair</span><span>Gross %</span><span>Trust</span></div>
       <div class="alert-list" id="alert-list-body"></div>
     </div>
     <div id="ai-chat-section"></div>
-    <div id="news-section"></div>
-  `;
+    <div id="news-section"></div>`;
   renderRecords(d);
   buildAIChat();
   loadNews();
 }
 
-function buildPies(d) {
-  const byType  = [['Spread', d.by_type?.spread||0, '#3b82f6'], ['Funding', d.by_type?.funding||0, '#ca8a04']];
-  const byTrust = [['High', d.by_trust?.high||0, '#16a34a'], ['Medium', d.by_trust?.medium||0, '#ca8a04'], ['Low', d.by_trust?.low||0, '#dc2626']];
-  const topCoins = Object.entries(d.by_symbol || {}).slice(0, 5);
-  const maxPct   = Math.max(...topCoins.map(([,v]) => v.total_pct), 0.001);
-  const bar = `<div style="flex:1;min-width:200px">
-    <div style="font-size:9px;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px">Top Coins (gross %)</div>
-    ${topCoins.map(([s,v]) =>
-      `<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-        <span style="font-family:var(--mono);font-size:10px;color:var(--t2);width:38px">${s}</span>
-        <div style="flex:1;background:var(--s2);border-radius:2px;height:11px">
-          <div style="width:${(v.total_pct/maxPct*100).toFixed(1)}%;height:100%;background:var(--yellow);border-radius:2px"></div>
-        </div>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--t1);width:52px;text-align:right">+${v.total_pct.toFixed(3)}%</span>
-      </div>`
-    ).join('')}
-  </div>`;
-  return `<div class="pie-wrap">${makePie(byType,'By Type')}${makePie(byTrust,'By Trust')}${bar}</div>`;
-}
-
-function makePie(data, title) {
-  const total = data.reduce((a,[,v]) => a + v, 0);
-  if (!total) return '';
-  const r = 50, cx = 58, cy = 58;
-  let start = 0, paths = '';
-  data.forEach(([,val,color]) => {
-    if (!val) return;
-    const a  = val / total * 2 * Math.PI;
-    const x1 = cx + r * Math.sin(start), y1 = cy - r * Math.cos(start);
-    const x2 = cx + r * Math.sin(start + a), y2 = cy - r * Math.cos(start + a);
-    paths += `<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r},0,${a > Math.PI ? 1 : 0},1,${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${color}" opacity=".8"/>`;
-    start += a;
-  });
-  const legend = data.map(([l,v,c]) =>
-    `<div class="pie-legend-row">
-      <span class="pie-dot" style="background:${c}"></span>
-      <span style="color:var(--t3)">${l}</span>
-      <span style="font-family:var(--mono);font-size:11px;color:var(--t1);font-weight:500">${v}</span>
-    </div>`
-  ).join('');
-  return `<div style="flex-shrink:0">
-    <div style="font-size:9px;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px">${title}</div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <svg width="116" height="116" viewBox="0 0 116 116">${paths}</svg>
-      <div class="pie-legend">${legend}</div>
-    </div>
-  </div>`;
-}
-
-// ── Record filter bar ──
 function buildRecFilterBar(d) {
-  const coins    = [...new Set((d.records||[]).map(r => r.symbol))].sort();
-  const coinOpts = coins.map(c => `<option value="${c}">${c}</option>`).join('');
-  return `<div class="rec-filter" id="rec-filter-bar">
+  const coins    = [...new Set((d.records||[]).map(r=>r.symbol))].sort();
+  const coinOpts = coins.map(c=>`<option value="${c}">${c}</option>`).join('');
+  return `<div class="rec-filter">
     <span class="blbl">Coin:</span>
     <select id="rec-coin" onchange="filterRecords()"><option value="">All</option>${coinOpts}</select>
     <div class="sep"></div>
     <span class="blbl">Type:</span>
-    <button class="chip on" id="rc-all" onclick="setRecType('')">All</button>
+    <button class="chip f-active" id="rc-all" onclick="setRecType('')">All</button>
     <button class="chip" id="rc-spread" onclick="setRecType('spread')">Spread</button>
     <button class="chip" id="rc-funding" onclick="setRecType('funding')">Funding</button>
     <div class="sep"></div>
-    <span class="blbl">UTC from:</span>
-    <input type="time" id="rec-time-from" onchange="filterRecords()">
-    <span class="blbl">to:</span>
-    <input type="time" id="rec-time-to" onchange="filterRecords()">
-    <div class="sep"></div>
     <span class="blbl">Min gross:</span>
     <input type="number" id="rec-min-gross" step="0.01" min="0" placeholder="0.00" style="width:70px" onchange="filterRecords()">
-    <div class="sep"></div>
-    <button class="chip reset" onclick="resetRecFilter()">↺ Reset</button>
+    <button class="chip reset" onclick="resetRecFilter()">Reset</button>
   </div>`;
 }
-
 function setRecType(t) {
-  _anRecType = t;
-  ['rc-all','rc-spread','rc-funding'].forEach(id => document.getElementById(id)?.classList.remove('on'));
-  document.getElementById(t ? 'rc-'+t : 'rc-all')?.classList.add('on');
+  _recType = t;
+  ['rc-all','rc-spread','rc-funding'].forEach(id=>document.getElementById(id)?.classList.remove('f-active'));
+  document.getElementById(t?'rc-'+t:'rc-all')?.classList.add('f-active');
   filterRecords();
 }
 function resetRecFilter() {
-  _anRecType = ''; _anRecCoin = ''; _anRecMinG = 0; _anRecFrom = ''; _anRecTo = '';
-  const c = document.getElementById('rec-coin'); if(c) c.value = '';
-  const f = document.getElementById('rec-time-from'); if(f) f.value = '';
-  const t = document.getElementById('rec-time-to'); if(t) t.value = '';
-  const m = document.getElementById('rec-min-gross'); if(m) m.value = '';
+  _recType=''; _recCoin=''; _recMinG=0; _recFrom=''; _recTo='';
+  ['rec-coin','rec-time-from','rec-time-to','rec-min-gross'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   setRecType('');
 }
 function filterRecords() {
-  _anRecCoin = document.getElementById('rec-coin')?.value || '';
-  _anRecFrom = document.getElementById('rec-time-from')?.value || '';
-  _anRecTo   = document.getElementById('rec-time-to')?.value   || '';
-  _anRecMinG = parseFloat(document.getElementById('rec-min-gross')?.value) || 0;
+  _recCoin = document.getElementById('rec-coin')?.value||'';
+  _recMinG = parseFloat(document.getElementById('rec-min-gross')?.value)||0;
   if (anData) renderRecords(anData);
 }
 function renderRecords(d) {
-  let recs = (d.records || []);
-  if (_anRecCoin) recs = recs.filter(r => r.symbol === _anRecCoin);
-  if (_anRecType) recs = recs.filter(r => r.type === _anRecType);
-  if (_anRecMinG) recs = recs.filter(r => (r.potential_pct||0) >= _anRecMinG);
-  if (_anRecFrom || _anRecTo) {
-    recs = recs.filter(r => {
-      const t  = new Date(r.ts * 1000);
-      const hm = t.getUTCHours() * 60 + t.getUTCMinutes();
-      if (_anRecFrom) { const [h,m] = _anRecFrom.split(':').map(Number); if (hm < h*60+m) return false; }
-      if (_anRecTo)   { const [h,m] = _anRecTo.split(':').map(Number);   if (hm > h*60+m) return false; }
-      return true;
-    });
-  }
+  let recs = (d.records||[]);
+  if (_recCoin) recs = recs.filter(r=>r.symbol===_recCoin);
+  if (_recType) recs = recs.filter(r=>r.type===_recType);
+  if (_recMinG) recs = recs.filter(r=>(r.potential_pct||0)>=_recMinG);
   const body = document.getElementById('alert-list-body');
   if (!body) return;
-  if (!recs.length) {
-    body.innerHTML = `<div style="padding:20px;text-align:center;color:var(--t3);font-size:11px">No records match filters</div>`;
-    return;
-  }
+  if (!recs.length) { body.innerHTML=`<div style="padding:20px;text-align:center;color:var(--t3);font-size:11px">No records</div>`; return; }
   body.innerHTML = recs.map(r => {
-    const ts   = new Date(r.ts * 1000).toUTCString().replace(' GMT','');
-    const pair = r.type === 'spread'
-      ? `${r.buy_exchange||'?'} → ${r.sell_exchange||'?'}`
-      : `${r.long_exchange||'?'} / ${r.short_exchange||'?'}`;
-    const tc   = r.trust_level === 'high' ? 'var(--green)' : r.trust_level === 'low' ? 'var(--red)' : 'var(--yellow)';
-    const aid  = r.alert_id || '—';
+    const ts   = new Date(r.ts*1000).toUTCString().replace(' GMT','');
+    const pair = r.type==='spread'?`${r.buy_exchange||'?'} > ${r.sell_exchange||'?'}`:`${r.long_exchange||'?'} / ${r.short_exchange||'?'}`;
+    const tc   = r.trust_level==='high'?'var(--green)':r.trust_level==='low'?'var(--red)':'var(--yellow)';
     return `<div class="ar-row">
       <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${ts.split(' ').slice(1,5).join(' ')}</span>
-      <span style="font-family:var(--mono);font-size:9px;color:var(--t4)">${aid}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--t4)">${r.alert_id||'—'}</span>
       <span class="coin" style="font-size:11px">${r.symbol}</span>
       <span class="badge ${r.type==='spread'?'spread-t':'funding-t'}">${r.type}</span>
       <span style="font-size:10px;color:var(--t3)">${pair}</span>
@@ -1174,258 +973,174 @@ function renderRecords(d) {
 // ══════════════════════════════════════════════════════════════
 // AI CHAT
 // ══════════════════════════════════════════════════════════════
-let chatMessages = [];
 function buildAIChat() {
-  const sec = document.getElementById('ai-chat-section');
-  if (!sec) return;
-  chatMessages = [];
-  sec.innerHTML = `<div class="an-section"><h3>🤖 AI Assistant <span style="font-size:9px;padding:2px 6px;background:var(--blue);color:#fff;border-radius:10px;margin-left:4px">CHAT</span></h3>
-    <div class="ai-chat" id="ai-chat">
-      <div class="ai-chat-hdr">Analytics Assistant <span class="ai-chat-badge">AI</span>
-        <span style="font-size:10px;color:var(--t3);margin-left:auto">Ask about today's data</span>
-      </div>
-      <div class="ai-messages" id="ai-msgs">
-        <div class="ai-msg bot">Hello! I'm your Futures &amp; Funding Scanner assistant.\n\nTry: "What's the best opportunity today?" or "How much could I have earned?"</div>
-      </div>
+  const sec = document.getElementById('ai-chat-section'); if (!sec) return;
+  sec.innerHTML = `<div class="an-section"><h3>AI Assistant</h3>
+    <div class="ai-chat">
+      <div class="ai-chat-hdr">Analytics Assistant <span class="ai-chat-badge">AI</span><span style="font-size:10px;color:var(--t3);margin-left:auto">Ask about data</span></div>
+      <div class="ai-messages" id="ai-msgs"><div class="ai-msg bot">Hello! Ask about your analytics: "best opportunity", "top coins", "total earned".</div></div>
       <div class="ai-input-row">
-        <input class="ai-input" id="ai-input" type="text" placeholder="Ask anything about your analytics..." maxlength="200">
+        <input class="ai-input" id="ai-input" type="text" placeholder="Ask anything..." maxlength="200">
         <button class="ai-send" id="ai-send-btn">Send</button>
       </div>
     </div>
   </div>`;
   document.getElementById('ai-send-btn').addEventListener('click', sendAIMessage);
-  document.getElementById('ai-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendAIMessage(); });
+  document.getElementById('ai-input').addEventListener('keydown', e => { if(e.key==='Enter') sendAIMessage(); });
 }
-
 async function sendAIMessage() {
-  const input = document.getElementById('ai-input');
-  if (!input) return;
-  const msg = input.value.trim();
-  if (!msg) return;
+  const input = document.getElementById('ai-input'); if (!input) return;
+  const msg = input.value.trim(); if (!msg) return;
   input.value = '';
   addAIMsg(msg, 'user');
   addAIMsg('...', 'bot', 'thinking');
   try {
-    const coin = document.getElementById('an-coin-filter')?.value || null;
-    const r    = await fetch('/api/ai_chat', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({message: msg, period: anPeriod, coin}),
-    });
+    const r = await fetch('/api/ai_chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,period:anPeriod})});
     const d = await r.json();
-    removeThinking();
-    addAIMsg(d.reply, 'bot');
-  } catch(e) {
-    removeThinking();
-    addAIMsg('Sorry, could not reach the server.', 'bot');
-  }
+    removeThinking(); addAIMsg(d.reply,'bot');
+  } catch(e) { removeThinking(); addAIMsg('Server error.','bot'); }
 }
-function addAIMsg(text, role, extra) {
-  const msgs = document.getElementById('ai-msgs');
-  if (!msgs) return;
-  const div = document.createElement('div');
-  div.className = `ai-msg ${role}` + (extra ? ` ${extra}` : '');
-  div.textContent = text;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+function addAIMsg(text,role,cls='') {
+  const msgs=document.getElementById('ai-msgs'); if(!msgs) return;
+  const div=document.createElement('div');
+  div.className=`ai-msg ${role} ${cls}`;
+  div.textContent=text;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
 }
-function removeThinking() {
-  document.querySelector('.ai-msg.thinking')?.remove();
-}
+function removeThinking(){ document.querySelector('.ai-msg.thinking')?.remove(); }
 
 // ══════════════════════════════════════════════════════════════
 // NEWS
 // ══════════════════════════════════════════════════════════════
 async function loadNews() {
-  const sec = document.getElementById('news-section');
-  if (!sec) return;
-  sec.innerHTML = `<div class="an-section"><h3>📰 Market News & Resources</h3>
-    <div style="padding:16px;text-align:center;color:var(--t3);font-size:11px"><div class="spin" style="margin:0 auto 8px"></div>Loading...</div>
-  </div>`;
+  const sec = document.getElementById('news-section'); if (!sec) return;
   try {
-    const r = await fetch('/api/news');
-    const d = await r.json();
-    const headlines   = d.headlines || [];
-    const staticLinks = d.static_links || [];
-    const allItems    = [...headlines, ...staticLinks];
-    if (!allItems.length) {
-      sec.innerHTML = `<div class="an-section"><h3>📰 Market Resources</h3><div class="news-list">${staticLinks.map(buildNewsItem).join('')}</div></div>`;
-      return;
-    }
-    sec.innerHTML = `<div class="an-section"><h3>📰 Market News & Resources</h3>
-      <div class="news-list">${allItems.map(buildNewsItem).join('')}</div>
+    const r = await fetch('/api/news'); const d = await r.json();
+    const items = [...(d.headlines||[]), ...(d.static_links||[])];
+    if (!items.length) { sec.innerHTML=''; return; }
+    sec.innerHTML = `<div class="an-section"><h3>Market Resources</h3>
+      <div style="display:flex;flex-direction:column;gap:4px">${items.map(item=>`<a href="${item.url}" target="_blank" rel="noopener" style="display:flex;gap:10px;padding:7px 10px;border-radius:4px;border:1px solid transparent;transition:background .1s;font-size:11px;color:var(--t2)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+        <span style="flex:1">${item.title}</span>
+        <span style="font-size:9px;color:var(--t3);white-space:nowrap">${item.source||''}</span>
+      </a>`).join('')}</div>
     </div>`;
-  } catch(e) {
-    sec.innerHTML = '';
-  }
-}
-function buildNewsItem(item) {
-  const kindCls = item.kind === 'tool' ? 'tool' : item.kind === 'search' ? 'search' : 'news';
-  const pub     = item.published ? new Date(item.published).toUTCString().split(' ').slice(1,4).join(' ') : '';
-  return `<a class="news-item" href="${item.url}" target="_blank" rel="noopener">
-    <div style="flex:1">
-      <div class="news-title">${item.title}</div>
-      <div class="news-meta">
-        ${item.source || ''}${pub ? ' · ' + pub : ''}
-        <span class="news-kind ${kindCls}" style="margin-left:4px">${item.kind}</span>
-      </div>
-    </div>
-  </a>`;
+  } catch(e) { if(document.getElementById('news-section')) document.getElementById('news-section').innerHTML=''; }
 }
 
 // ══════════════════════════════════════════════════════════════
 // SPREAD CONTROLS
 // ══════════════════════════════════════════════════════════════
-const rSpread  = document.getElementById('r-spread');
-const rvSpread = document.getElementById('rv-spread');
-const nSpread  = document.getElementById('n-spread');
-let _spreadFocused = false;
+const rSpread=document.getElementById('r-spread'), rvSpread=document.getElementById('rv-spread'), nSpread=document.getElementById('n-spread');
 
-nSpread.addEventListener('focus',  () => _spreadFocused = true);
-nSpread.addEventListener('blur',   () => { _spreadFocused = false; });
-
-function setSpread(v, fromInput) {
-  const n = parseFloat(v);
-  const val = isNaN(n) || n < 0 ? 0 : n;
-  rSpread.value = Math.min(2, val);
-  rvSpread.textContent = val.toFixed(2) + '%';
-  // Only update input value if NOT currently editing it
-  if (!fromInput) {
-    nSpread.value = val > 0 ? val : '';
-  }
+rSpread.addEventListener('input', () => {
+  const v = parseFloat(rSpread.value);
+  rvSpread.textContent = v.toFixed(2) + '%';
+  nSpread.value = v > 0 ? v : '';
   renderSpreads();
-}
-
-rSpread.addEventListener('input', () => setSpread(rSpread.value, false));
-// While typing: update range and label but don't overwrite input
+});
 nSpread.addEventListener('input', () => {
   const v = parseFloat(nSpread.value);
-  if (!isNaN(v) && v >= 0) {
-    rSpread.value = Math.min(2, v);
-    rvSpread.textContent = v.toFixed(2) + '%';
-    renderSpreads();
-  } else if (nSpread.value === '' || nSpread.value === '0') {
-    rSpread.value = 0;
-    rvSpread.textContent = '0.00%';
-    renderSpreads();
-  }
+  if (!isNaN(v) && v >= 0) { rSpread.value=Math.min(2,v); rvSpread.textContent=v.toFixed(2)+'%'; }
+  else if (nSpread.value===''||nSpread.value==='0') { rSpread.value=0; rvSpread.textContent='0.00%'; }
+  renderSpreads();
 });
-// On blur/commit: normalise
-nSpread.addEventListener('change', () => setSpread(nSpread.value, false));
+nSpread.addEventListener('change', () => {
+  const v = parseFloat(nSpread.value);
+  if (isNaN(v)||v<0) { nSpread.value=''; rSpread.value=0; rvSpread.textContent='0.00%'; renderSpreads(); }
+});
 
 // ══════════════════════════════════════════════════════════════
 // EXCHANGE FILTER — 3-STATE
-// State 0 = neutral (no class), 1 = included (green), 2 = excluded (red)
 // ══════════════════════════════════════════════════════════════
 function applyExChipStyle(btn) {
-  const ex    = btn.dataset.sex;
-  const state = exFilterState[ex] || 0;
-  btn.classList.remove('on', 'ex-included', 'ex-excluded');
-  if (state === 1) btn.classList.add('ex-included');
-  else if (state === 2) btn.classList.add('ex-excluded');
-  // state 0 = no class (neutral grey)
+  const s = exFilterState[btn.dataset.sex]||0;
+  btn.classList.remove('ex-included','ex-excluded');
+  if (s===1) btn.classList.add('ex-included');
+  else if (s===2) btn.classList.add('ex-excluded');
 }
-
 document.querySelectorAll('[data-sex]').forEach(b => {
-  if (b.id === 'sex-all') return;
   b.addEventListener('click', () => {
-    const ex = b.dataset.sex;
-    exFilterState[ex] = ((exFilterState[ex] || 0) + 1) % 3;
-    applyExChipStyle(b);
-    // Update ALL chip state
-    const anyActive = EXS.some(e => exFilterState[e] !== 0);
-    document.getElementById('sex-all').classList.toggle('on', !anyActive);
-    renderSpreads();
+    exFilterState[b.dataset.sex] = ((exFilterState[b.dataset.sex]||0)+1)%3;
+    applyExChipStyle(b); renderSpreads();
   });
 });
-
-document.getElementById('sex-all').addEventListener('click', () => {
-  // Reset all to neutral
-  EXS.forEach(ex => exFilterState[ex] = 0);
-  document.querySelectorAll('[data-sex]').forEach(b => {
-    if (b.id !== 'sex-all') applyExChipStyle(b);
-  });
-  document.getElementById('sex-all').classList.add('on');
+document.getElementById('sex-reset').addEventListener('click', () => {
+  EXS.forEach(ex => exFilterState[ex]=0);
+  document.querySelectorAll('[data-sex]').forEach(b => applyExChipStyle(b));
   renderSpreads();
 });
-// Initially show ALL as active
-document.getElementById('sex-all').classList.add('on');
 
 // ══════════════════════════════════════════════════════════════
-// FUNDING EXCHANGE FILTER
+// TOGGLE CHIPS (filter buttons that turn red when active = exclude)
 // ══════════════════════════════════════════════════════════════
-document.querySelectorAll('[data-fex]').forEach(b => {
-  if (b.id === 'fex-all') return;
-  b.addEventListener('click', () => {
-    if (visibleFex.has(b.dataset.fex)) visibleFex.delete(b.dataset.fex);
-    else visibleFex.add(b.dataset.fex);
-    b.classList.toggle('on', visibleFex.has(b.dataset.fex));
-    document.getElementById('fex-all').classList.toggle('on', visibleFex.size === EXS.length);
-    renderFunding();
-  });
-});
-document.getElementById('fex-all').addEventListener('click', () => {
-  if (visibleFex.size === EXS.length) {
-    visibleFex.clear();
-    document.querySelectorAll('[data-fex]').forEach(b => b.classList.remove('on'));
-  } else {
-    visibleFex = new Set(EXS);
-    document.querySelectorAll('[data-fex]').forEach(b => b.classList.add('on'));
-  }
-  renderFunding();
-});
-
-// ══════════════════════════════════════════════════════════════
-// TOGGLE CHIPS
-// ══════════════════════════════════════════════════════════════
-function togChip(id, stateRef, cb) {
-  const el = document.getElementById(id);
-  el.addEventListener('click', () => {
-    window[stateRef] = !window[stateRef];
-    el.classList.toggle('on', window[stateRef]);
+function togExcludeChip(id, getter, setter, cb) {
+  document.getElementById(id).addEventListener('click', () => {
+    setter(!getter());
+    document.getElementById(id).classList.toggle('f-exclude', getter());
     cb();
   });
 }
-togChip('btn-alerts-only', 'alertsOnly',   renderSpreads);
-togChip('btn-stable',      'stableOnly',   renderSpreads);
-togChip('btn-hide-high',   'hideHigh',     renderSpreads);
-togChip('btn-hide-med',    'hideMed',      renderSpreads);
-togChip('btn-hide-low',    'hideLow',      renderSpreads);
-togChip('btn-trusted',     'trustedOnly',  renderOpps);
-togChip('btn-opp-stable',  'oppStableOnly',renderOpps);
+// Alerts only / Stable only — green when active (include)
+function togIncludeChip(id, getter, setter, cb) {
+  document.getElementById(id).addEventListener('click', () => {
+    setter(!getter());
+    document.getElementById(id).classList.toggle('f-active', getter());
+    cb();
+  });
+}
+
+// "Alerts only" and "Stable only" are positive filters — green when on
+togIncludeChip('btn-alerts-only', ()=>alertsOnly, v=>{alertsOnly=v;}, renderSpreads);
+togIncludeChip('btn-stable',      ()=>stableOnly,  v=>{stableOnly=v;},  renderSpreads);
+
+// "Hide trust" buttons are exclusion filters — red when on
+togExcludeChip('btn-hide-high', ()=>hideHigh, v=>{hideHigh=v;}, renderSpreads);
+togExcludeChip('btn-hide-med',  ()=>hideMed,  v=>{hideMed=v;},  renderSpreads);
+togExcludeChip('btn-hide-low',  ()=>hideLow,  v=>{hideLow=v;},  renderSpreads);
 
 // Freeze
 document.getElementById('btn-freeze').addEventListener('click', function() {
   frozen = !frozen;
-  if (frozen) { frozenData = JSON.parse(JSON.stringify(allData)); this.textContent = '▶ Unfreeze'; this.classList.add('on'); }
-  else { frozenData = null; this.textContent = '❄ Freeze'; this.classList.remove('on'); renderSpreads(); }
+  if (frozen) { frozenData=JSON.parse(JSON.stringify(allData)); this.textContent='Unfreeze'; this.classList.add('on'); }
+  else { frozenData=null; this.textContent='Freeze'; this.classList.remove('on'); renderSpreads(); }
 });
 
-// ══════════════════════════════════════════════════════════════
-// RESETS
-// ══════════════════════════════════════════════════════════════
+// Reset all spread filters
 document.getElementById('btn-sp-reset').addEventListener('click', () => {
-  setSpread(0, false);
-  alertsOnly = stableOnly = hideHigh = hideMed = hideLow = frozen = false;
-  frozenData = null;
-  EXS.forEach(ex => exFilterState[ex] = 0);
-  document.querySelectorAll('[data-sex]').forEach(b => { if (b.id !== 'sex-all') applyExChipStyle(b); });
-  document.getElementById('sex-all').classList.add('on');
-  ['btn-alerts-only','btn-stable','btn-hide-high','btn-hide-med','btn-hide-low'].forEach(id =>
-    document.getElementById(id).classList.remove('on')
-  );
-  const fr = document.getElementById('btn-freeze');
-  fr.classList.remove('on'); fr.textContent = '❄ Freeze';
+  nSpread.value=''; rSpread.value=0; rvSpread.textContent='0.00%';
+  alertsOnly=stableOnly=hideHigh=hideMed=hideLow=frozen=false; frozenData=null;
+  EXS.forEach(ex=>exFilterState[ex]=0);
+  document.querySelectorAll('[data-sex]').forEach(b=>applyExChipStyle(b));
+  ['btn-alerts-only','btn-stable'].forEach(id=>document.getElementById(id).classList.remove('f-active'));
+  ['btn-hide-high','btn-hide-med','btn-hide-low'].forEach(id=>document.getElementById(id).classList.remove('f-exclude'));
+  document.getElementById('btn-freeze').classList.remove('on');
+  document.getElementById('btn-freeze').textContent='Freeze';
   renderSpreads();
 });
+
+// Funding reset
 document.getElementById('btn-fr-reset').addEventListener('click', () => {
-  visibleFex = new Set(EXS);
-  document.querySelectorAll('[data-fex]').forEach(b => b.classList.add('on'));
+  visibleFex=new Set(EXS);
+  document.querySelectorAll('[data-fex]').forEach(b=>b.classList.add('on'));
   renderFunding();
 });
+
+// Funding exchange chips
+document.querySelectorAll('[data-fex]').forEach(b => {
+  b.addEventListener('click', () => {
+    if (visibleFex.has(b.dataset.fex)) visibleFex.delete(b.dataset.fex);
+    else visibleFex.add(b.dataset.fex);
+    b.classList.toggle('on', visibleFex.has(b.dataset.fex));
+    renderFunding();
+  });
+});
+
+// Opp chips
+togIncludeChip('btn-trusted',    ()=>trustedOnly,   v=>{trustedOnly=v;},   renderOpps);
+togIncludeChip('btn-opp-stable', ()=>oppStableOnly,  v=>{oppStableOnly=v;},  renderOpps);
 document.getElementById('btn-opp-reset').addEventListener('click', () => {
-  trustedOnly = oppStableOnly = false;
-  document.getElementById('btn-trusted').classList.remove('on');
-  document.getElementById('btn-opp-stable').classList.remove('on');
+  trustedOnly=oppStableOnly=false;
+  ['btn-trusted','btn-opp-stable'].forEach(id=>document.getElementById(id).classList.remove('f-active'));
   renderOpps();
 });
 
@@ -1434,88 +1149,74 @@ document.getElementById('btn-opp-reset').addEventListener('click', () => {
 // ══════════════════════════════════════════════════════════════
 document.querySelectorAll('th[data-col]').forEach(th => {
   th.addEventListener('click', () => {
-    if (sortCol === th.dataset.col) { sortAsc = !sortAsc; sortDir = sortAsc ? 1 : -1; }
-    else { sortCol = th.dataset.col; sortDir = -1; sortAsc = false; }
-    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted', 'asc'));
-    th.classList.add('sorted');
-    if (sortAsc) th.classList.add('asc');
+    if (sortCol===th.dataset.col){sortAsc=!sortAsc;sortDir=sortAsc?1:-1;}
+    else{sortCol=th.dataset.col;sortDir=-1;sortAsc=false;}
+    document.querySelectorAll('th').forEach(t=>t.classList.remove('sorted','asc'));
+    th.classList.add('sorted'); if(sortAsc) th.classList.add('asc');
     renderSpreads();
   });
 });
 
 // ══════════════════════════════════════════════════════════════
-// FETCH LOOP — 200ms polling (returns cached data, very cheap)
+// FETCH LOOP — 200ms polling
 // ══════════════════════════════════════════════════════════════
 let _fetching = false;
-
 async function fetchData() {
   if (_fetching) return;
   _fetching = true;
   try {
-    const [dr, er] = await Promise.all([fetch('/api/data'), fetch('/api/exchanges')]);
-    const d = await dr.json(), e = await er.json();
+    const [dr,er] = await Promise.all([fetch('/api/data'), fetch('/api/exchanges')]);
+    const d=await dr.json(), e=await er.json();
     exMeta = e;
     if (d.cache && d.cache.data) {
-      // Only re-render if scan timestamp changed (new scan completed)
-      const newTs = d.cache.ts || 0;
-      scanInterval = d.scan_interval || 2;
-      scanCount    = d.scan_count    || 0;
-      lastTs       = newTs;
-
-      allData = d.cache.data;
+      scanInterval = d.scan_interval||2;
+      scanCount    = d.scan_count||0;
+      lastTs       = d.cache.ts||0;
+      allData      = d.cache.data;
       updateStableMap();
-
+      const newTs = d.cache.ts||0;
       if (newTs !== lastDataTs) {
         lastDataTs = newTs;
         renderAll(d.cache.elapsed);
       } else {
-        // Just update time-based visuals (alive column needs refresh too)
-        updateStableDisplay();
+        // Lightweight update: just counters + alive strings
+        updateCounters();
       }
       setStatus('live');
     }
-  } catch(err) {
-    setStatus('err');
-  } finally {
-    _fetching = false;
-  }
+  } catch(err) { setStatus('err'); }
+  finally { _fetching=false; }
 }
 
-function updateStableDisplay() {
-  // Lightweight update: just re-render spreads table for alive/stable column updates
-  // and stats counters — without full re-fetch
-  const syms = Object.keys(allData);
-  let stableCnt = 0, unstableCnt = 0;
-  syms.forEach(s => {
-    const a = allData[s].analysis;
-    const k = `${s}_${a.min_exchange}_${a.max_exchange}`;
-    if (isStable(k))   stableCnt++;
-    if (isUnstable(k)) unstableCnt++;
+function updateCounters() {
+  const syms=Object.keys(allData);
+  let stableCnt=0,unstableCnt=0,lockedCnt=0;
+  syms.forEach(s=>{
+    const a=allData[s].analysis;
+    const k=`${s}_${a.min_exchange}_${a.max_exchange}`;
+    if(isLocked(k)) lockedCnt++;
+    else if(isUnstable(k)) unstableCnt++;
+    else if(isStable(k)) stableCnt++;
   });
-  document.getElementById('s-stable').textContent   = stableCnt;
-  document.getElementById('s-unstable').textContent = unstableCnt;
-  const utab = document.querySelector('[data-t="unstable"]');
-  if (utab) utab.textContent = unstableCnt > 0 ? `⚠ Unstable (${unstableCnt})` : '⚠ Unstable';
+  document.getElementById('s-stable').textContent=stableCnt;
+  document.getElementById('s-unstable').textContent=unstableCnt;
+  document.getElementById('s-locked').textContent=lockedCnt;
+  const total=unstableCnt+lockedCnt;
+  const btn=document.getElementById('tab-unstable-btn');
+  btn.textContent=total>0?`Unstable (${total})`:'Unstable';
+  btn.classList.toggle('has-items',total>0);
 }
 
-function setStatus(s) {
-  document.getElementById('dot').className    = 'pulse ' + s;
-  document.getElementById('slabel').textContent = s === 'live' ? 'LIVE' : s === 'scan' ? 'SCANNING' : 'ERROR';
+function setStatus(s){
+  document.getElementById('dot').className='pulse '+s;
+  document.getElementById('slabel').textContent=s==='live'?'LIVE':s==='scan'?'SCANNING':'ERROR';
 }
 
 // ══════════════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════════════
-function worstTrust(tm, a, b) {
-  const ta = tm?.[a] || 'medium', tb = tm?.[b] || 'medium';
-  return ta === 'low' || tb === 'low' ? 'low' : ta === 'medium' || tb === 'medium' ? 'medium' : 'high';
-}
-function fp(p) {
-  if (!p && p !== 0) return '—';
-  if (p >= 1000) return p.toLocaleString('en', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  if (p >= 1)    return p.toFixed(4);
-  return p.toFixed(6);
-}
+function worstTrust(tm,a,b){const ta=tm?.[a]||'medium',tb=tm?.[b]||'medium';return ta==='low'||tb==='low'?'low':ta==='medium'||tb==='medium'?'medium':'high';}
+function fp(p){if(!p&&p!==0)return '—';if(p>=1000)return p.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(p>=1)return p.toFixed(4);return p.toFixed(6);}
 
 // ══════════════════════════════════════════════════════════════
 // BOOT

@@ -1,0 +1,81 @@
+
+========================================================================
+  SESSION STARTED: 2026-03-18 22:11:07 UTC
+========================================================================
+[2026-03-18 22:11:10 UTC] [ALT-00001] NEW FUNDING AVAX   +0.0600%/8h (65.7% annual)  SHORT KuCoin  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00002] NEW FUNDING AVAX   +0.0596%/8h (65.2% annual)  SHORT KuCoin  LONG OKX  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00003] NEW FUNDING AVAX   +0.0475%/8h (52.0% annual)  SHORT KuCoin  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00004] NEW FUNDING AVAX   +0.0415%/8h (45.4% annual)  SHORT KuCoin  LONG CoinEx  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00005] NEW FUNDING AVAX   +0.0363%/8h (39.8% annual)  SHORT KuCoin  LONG Bybit  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00006] NEW SPREAD  DOT    +0.1933%  LONG Binance @ $1.5520  SHORT CoinEx @ $1.5550  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00007] NEW FUNDING DOT    +0.0401%/8h (43.9% annual)  SHORT Binance  LONG KuCoin  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00008] NEW FUNDING DOT    +0.0301%/8h (33.0% annual)  SHORT CoinEx  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00009] NEW SPREAD  ATOM   +0.1582%  LONG OKX @ $1.8960  SHORT KuCoin @ $1.8990  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00010] NEW FUNDING ATOM   +0.0310%/8h (33.9% annual)  SHORT CoinEx  LONG OKX  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00011] NEW SPREAD  NEAR   +0.1805%  LONG Gate.io @ $1.3852  SHORT CoinEx @ $1.3877  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00012] NEW SPREAD  FTM    +4.7910%  LONG Binance @ $0.7702  SHORT Gate.io @ $0.8071  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00013] NEW SPREAD  INJ    +0.1627%  LONG OKX @ $3.0730  SHORT KuCoin @ $3.0780  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00014] NEW FUNDING INJ    +0.0418%/8h (45.8% annual)  SHORT CoinEx  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00015] NEW FUNDING INJ    +0.0415%/8h (45.4% annual)  SHORT OKX  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00016] NEW FUNDING INJ    +0.0388%/8h (42.4% annual)  SHORT CoinEx  LONG Binance  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00017] NEW FUNDING INJ    +0.0384%/8h (42.1% annual)  SHORT OKX  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00018] NEW SPREAD  SEI    +0.2923%  LONG OKX @ $0.0650  SHORT KuCoin @ $0.0652  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00019] NEW FUNDING SEI    +0.0358%/8h (39.2% annual)  SHORT KuCoin  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00020] NEW FUNDING SEI    +0.0358%/8h (39.2% annual)  SHORT KuCoin  LONG CoinEx  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00021] NEW FUNDING SEI    +0.0308%/8h (33.7% annual)  SHORT KuCoin  LONG OKX  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00022] NEW SPREAD  TIA    +0.2017%  LONG Gate.io @ $0.3470  SHORT KuCoin @ $0.3477  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00023] NEW SPREAD  CRV    +0.2937%  LONG MEXC @ $0.2383  SHORT Binance @ $0.2390  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00024] NEW FUNDING CRV    +0.0315%/8h (34.5% annual)  SHORT Binance  LONG KuCoin  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00025] NEW SPREAD  MKR    +1.7999%  LONG Binance @ $1650.1000  SHORT Gate.io @ $1679.8000  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00026] NEW SPREAD  SNX    +0.2251%  LONG Binance @ $0.3110  SHORT CoinEx @ $0.3117  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00027] NEW FUNDING SNX    +0.0355%/8h (38.9% annual)  SHORT KuCoin  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00028] NEW SPREAD  GRT    +0.1882%  LONG Binance @ $0.0266  SHORT KuCoin @ $0.0266  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00029] NEW SPREAD  DYDX   +0.6818%  LONG Binance @ $0.0880  SHORT KuCoin @ $0.0886  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00030] NEW FUNDING DYDX   +0.0740%/8h (81.0% annual)  SHORT Binance  LONG KuCoin  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00031] NEW FUNDING DYDX   +0.0640%/8h (70.1% annual)  SHORT CoinEx  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00032] NEW FUNDING DYDX   +0.0580%/8h (63.5% annual)  SHORT Gate.io  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00033] NEW FUNDING DYDX   +0.0516%/8h (56.5% annual)  SHORT Binance  LONG Bybit  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00034] NEW FUNDING DYDX   +0.0416%/8h (45.6% annual)  SHORT CoinEx  LONG Bybit  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00035] NEW FUNDING DYDX   +0.0356%/8h (39.0% annual)  SHORT Gate.io  LONG Bybit  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00036] NEW SPREAD  1INCH  +0.5426%  LONG Gate.io @ $0.0977  SHORT KuCoin @ $0.0982  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00037] NEW SPREAD  IMX    +0.5266%  LONG Gate.io @ $0.1709  SHORT KuCoin @ $0.1718  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00038] NEW FUNDING IMX    +0.0422%/8h (46.2% annual)  SHORT KuCoin  LONG CoinEx  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00039] NEW FUNDING IMX    +0.0372%/8h (40.7% annual)  SHORT KuCoin  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00040] NEW FUNDING IMX    +0.0372%/8h (40.7% annual)  SHORT KuCoin  LONG Bybit  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00041] NEW FUNDING IMX    +0.0372%/8h (40.7% annual)  SHORT KuCoin  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00042] NEW SPREAD  RPL    +0.2253%  LONG Gate.io @ $1.9530  SHORT Bybit @ $1.9574  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00043] NEW FUNDING RPL    +0.0337%/8h (36.9% annual)  SHORT Bybit  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00044] NEW FUNDING RPL    +0.0324%/8h (35.5% annual)  SHORT Bybit  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00045] NEW FUNDING ARB    +0.0362%/8h (39.6% annual)  SHORT KuCoin  LONG Binance  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00046] NEW FUNDING ARB    +0.0351%/8h (38.5% annual)  SHORT Gate.io  LONG Binance  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00047] NEW SPREAD  APT    +0.2660%  LONG Gate.io @ $0.9774  SHORT KuCoin @ $0.9800  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00048] NEW SPREAD  STX    +0.7594%  LONG Bybit @ $0.2502  SHORT KuCoin @ $0.2521  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00049] NEW FUNDING STX    +0.0381%/8h (41.7% annual)  SHORT CoinEx  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00050] NEW FUNDING STX    +0.0328%/8h (35.9% annual)  SHORT Gate.io  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00051] NEW FUNDING PEPE   +0.0409%/8h (44.8% annual)  SHORT CoinEx  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00052] NEW FUNDING BLUR   +0.0336%/8h (36.8% annual)  SHORT Gate.io  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00053] NEW FUNDING BLUR   +0.0327%/8h (35.8% annual)  SHORT Bybit  LONG KuCoin  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00054] NEW SPREAD  JTO    +0.2414%  LONG Gate.io @ $0.2900  SHORT CoinEx @ $0.2907  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00055] NEW FUNDING JTO    +0.0504%/8h (55.2% annual)  SHORT Binance  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00056] NEW FUNDING JTO    +0.0491%/8h (53.8% annual)  SHORT CoinEx  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00057] NEW FUNDING JTO    +0.0457%/8h (50.1% annual)  SHORT Bybit  LONG Gate.io  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00058] NEW SPREAD  FET    +0.1825%  LONG Gate.io @ $0.2192  SHORT KuCoin @ $0.2196  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00059] NEW SPREAD  ORDI   +0.2817%  LONG Binance @ $2.5200  SHORT KuCoin @ $2.5271  trust=high
+[2026-03-18 22:11:10 UTC] [ALT-00060] NEW FUNDING ORDI   +0.0340%/8h (37.2% annual)  SHORT KuCoin  LONG CoinEx  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00061] NEW SPREAD  STRK   +0.2112%  LONG Binance @ $0.0374  SHORT CoinEx @ $0.0375  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00062] NEW FUNDING STRK   +0.0378%/8h (41.4% annual)  SHORT CoinEx  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00063] NEW FUNDING STRK   +0.0359%/8h (39.3% annual)  SHORT Gate.io  LONG KuCoin  trust=medium
+[2026-03-18 22:11:10 UTC] [ALT-00064] NEW FUNDING STRK   +0.0340%/8h (37.2% annual)  SHORT Bybit  LONG KuCoin  trust=high
+[2026-03-18 22:11:13 UTC] [ALT-00065] NEW FUNDING AVAX   +0.0463%/8h (50.7% annual)  SHORT KuCoin  LONG MEXC  trust=medium
+[2026-03-18 22:11:13 UTC] [ALT-00066] NEW SPREAD  DOT    +0.1933%  LONG MEXC @ $1.5520  SHORT CoinEx @ $1.5550  trust=medium
+[2026-03-18 22:11:13 UTC] [ALT-00067] NEW SPREAD  NEAR   +0.1949%  LONG MEXC @ $1.3850  SHORT CoinEx @ $1.3877  trust=medium
+[2026-03-18 22:11:13 UTC] [ALT-00068] NEW SPREAD  CRV    +0.3361%  LONG Binance @ $0.2380  SHORT KuCoin @ $0.2388  trust=high
+[2026-03-18 22:11:13 UTC] [ALT-00069] NEW SPREAD  SNX    +0.2571%  LONG Bybit @ $0.3112  SHORT Binance @ $0.3120  trust=high
+[2026-03-18 22:11:13 UTC] [ALT-00070] NEW SPREAD  RPL    +0.3072%  LONG Gate.io @ $1.9530  SHORT Binance @ $1.9590  trust=medium
+[2026-03-18 22:11:13 UTC] [ALT-00071] NEW SPREAD  OP     +0.1582%  LONG Binance @ $0.1264  SHORT KuCoin @ $0.1266  trust=high
+[2026-03-18 22:11:13 UTC] [ALT-00072] NEW SPREAD  PYTH   +0.1696%  LONG Binance @ $0.0472  SHORT KuCoin @ $0.0472  trust=high
+
+------------------------------------------------------------------------
+  SESSION ENDED: 2026-03-18 22:11:13 UTC  |  Duration: 00:00:06  |  Alerts: 72
+------------------------------------------------------------------------
+

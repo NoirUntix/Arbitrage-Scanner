@@ -94,8 +94,9 @@ select{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);pa
 .sep{width:1px;height:16px;background:var(--b2);flex-shrink:0}
 
 /* ── EXCLUDE BUTTON ── */
-.exclude-btn{width:20px;height:20px;border-radius:50%;background:transparent;border:1.5px solid var(--red);color:var(--red);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;transition:background .15s,transform .1s;flex-shrink:0;padding:0;font-family:var(--mono);font-weight:600}
+.exclude-btn{width:20px;height:20px;border-radius:50%;background:transparent;border:1.5px solid var(--red);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;flex-shrink:0;padding:0;position:relative}
 .exclude-btn:hover{background:var(--rbg);transform:scale(1.15)}
+.exclude-btn svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
 
 /* ── ACTION BUTTONS ── */
 .action-btn{padding:3px 9px;border-radius:4px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid;transition:all .15s;font-family:var(--font);line-height:1.5}
@@ -141,7 +142,7 @@ td.td-exclude{padding:8px 6px 8px 12px;width:30px}
 .badge.spread-t{background:var(--bbg);color:var(--blue);border:1px solid var(--bbr)}
 .badge.funding-t{background:var(--ybg);color:var(--yellow);border:1px solid var(--ybr)}
 .badge.manual-badge{background:var(--pbg);color:var(--purple);border:1px solid var(--pbr)}
-.badge.system-badge{background:var(--s3);color:var(--t3);border:1px solid var(--b2)}
+.badge.system-badge{background:var(--rbg);color:var(--red);border:1px solid var(--rbr)}
 .badge.ban-reason{background:var(--rbg);color:var(--red);border:1px solid var(--rbr)}
 .flash td{animation:rowFlash .4s ease}
 @keyframes rowFlash{0%{background:rgba(59,130,246,.12)}100%{background:transparent}}
@@ -380,6 +381,7 @@ td.td-exclude{padding:8px 6px 8px 12px;width:30px}
     <button class="chip" id="btn-trusted">Trusted only</button>
     <button class="chip" id="btn-opp-stable">Stable only</button>
     <div class="sep"></div>
+    <button class="chip freeze" id="btn-opp-freeze">Freeze</button>
     <button class="chip reset" id="btn-opp-reset">Reset</button>
   </div>
   <div class="opp-grid" id="opp-grid"></div>
@@ -483,6 +485,8 @@ let visibleFex = new Set(EXS);
 // Opp filter
 let trustedOnly   = false;
 let oppStableOnly = false;
+let oppFrozen     = false;
+let oppFrozenData = null;
 
 // Analytics
 let anPeriod     = 'day';
@@ -494,12 +498,15 @@ let anData       = null;
 let _recType = '', _recCoin = '', _recMinG = 0;
 
 // ── Manual exclusion & ban system ──────────────────────────────
-// manuallyExcluded: keys excluded by user click → shown in Unstable as "Manual"
+// manuallyExcluded: user-clicked X → "Manual Removal" in Unstable. Permanent until banned.
 const manuallyExcluded = new Set();
-// bannedKeys: keys banned → hidden from all views, shown in Ban List
-const bannedKeys = new Set();
-// bannedItems: key → {symbol, min_ex, max_ex, spread_pct, min_price, max_price, trust, banned_at}
+// bannedKeys / bannedItems: banned → hidden from all views, shown in Ban List
+const bannedKeys  = new Set();
 const bannedItems = new Map();
+// serverUnstableKeys: server-confirmed unstable (spread>1% or explicit mark) — PERMANENT
+const serverUnstableKeys = new Set();
+// autoUnstableKeys: local detection spread>1%, rebuilt each scan
+const autoUnstableKeys = new Set();
 
 // Stable tracking
 const stableMap   = new Map();  // key -> first_seen ms
@@ -523,6 +530,9 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.t === 'exchanges')  renderExchanges();
     if (t.dataset.t === 'unstable')   renderUnstable();
     if (t.dataset.t === 'banlist')    renderBanList();
+    // Log tab switch
+    fetch('/api/action/log', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'TAB_SWITCH', target: t.dataset.t})}).catch(()=>{});
   });
 });
 
@@ -559,9 +569,9 @@ function updateStableMap() {
       seenKeys.add(k);
     });
   });
-  // Remove keys gone for >30s (but keep manually excluded & banned)
+  // Remove keys gone for >30s — but NEVER remove manually excluded or banned keys
   stableMap.forEach((ts, k) => {
-    if (manuallyExcluded.has(k) || bannedKeys.has(k)) return;
+    if (manuallyExcluded.has(k) || bannedKeys.has(k)) return; // user decision — persist forever
     if (!seenKeys.has(k) && now - (lastSeenMap.get(k)||0) > 30000) {
       stableMap.delete(k); lastSeenMap.delete(k); lockedKeys.delete(k);
     }
@@ -569,8 +579,9 @@ function updateStableMap() {
 }
 
 function aliveMs(k)     { return stableMap.has(k) ? Date.now() - stableMap.get(k) : 0; }
-function isStable(k)    { const ms = aliveMs(k); return ms >= 15000 && ms < 900000; }
-function isUnstable(k)  { return aliveMs(k) >= 900000; }
+function isStable(k)    { const ms = aliveMs(k); return ms >= 15000 && !isUnstable(k); }
+// isUnstable = server confirmed OR auto (spread>1%) OR manually excluded
+function isUnstable(k)  { return serverUnstableKeys.has(k) || autoUnstableKeys.has(k) || manuallyExcluded.has(k); }
 function isLocked(k)    { return lockedKeys.has(k); }
 function aliveStr(k) {
   if (!stableMap.has(k)) return '—';
@@ -578,48 +589,91 @@ function aliveStr(k) {
   return s < 60 ? s + 's' : Math.floor(s/60) + 'm' + (s%60 ? ' ' + (s%60) + 's' : '');
 }
 
-// ══════════════════════════════════════════════════════════════
-// MANUAL EXCLUDE / BAN / RESTORE
-// ══════════════════════════════════════════════════════════════
-function manualExclude(key) {
-  manuallyExcluded.add(key);
-  renderSpreads();
-  updateCounters();
-  // Switch to unstable tab briefly to show the user
+// Rebuild autoUnstableKeys from current scan (spread > 1%)
+function rebuildAutoUnstable() {
+  autoUnstableKeys.clear();
+  Object.values(allData).forEach(d => {
+    const a = d.analysis; if (!a) return;
+    if ((a.spread_pct || 0) > 1.0) {
+      const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
+      if (!bannedKeys.has(k)) autoUnstableKeys.add(k);
+    }
+  });
 }
 
-function restoreToMain(key) {
-  manuallyExcluded.delete(key);
-  if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
+// ══════════════════════════════════════════════════════════════
+// MANUAL EXCLUDE / BAN
+// ══════════════════════════════════════════════════════════════
+function _parseKey(key) {
+  // key format: SYMBOL_MINEX_MAXEX
+  const parts = key.split('_');
+  const sym   = parts[0];
+  const minEx = parts[1] || '?';
+  const maxEx = parts.slice(2).join('_') || '?';
+  return { sym, minEx, maxEx };
+}
+
+function manualExclude(key) {
+  if (manuallyExcluded.has(key) || bannedKeys.has(key)) return; // idempotent
+  manuallyExcluded.add(key);
+  // Get current spread for this key from allData
+  const { sym, minEx, maxEx } = _parseKey(key);
+  const sp = allData[sym]?.analysis?.spread_pct || 0;
+  // Persist to server
+  fetch('/api/action/unstable', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx,
+                          spread_pct: sp, by: 'user'}),
+  }).catch(() => {});
   renderSpreads();
+  if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
   updateCounters();
+  if (document.querySelector('.tab[data-t="analytics"]')?.classList.contains('on')) loadAnalytics();
 }
 
 function banItem(key, sym, minEx, maxEx, spreadPct, minPrice, maxPrice, trust) {
+  if (bannedKeys.has(key)) return; // already banned — no double-modify
   bannedKeys.add(key);
   manuallyExcluded.delete(key);
+  serverUnstableKeys.delete(key);
+  autoUnstableKeys.delete(key);
   lockedKeys.delete(key);
   bannedItems.set(key, {
-    symbol:     sym,
-    min_ex:     minEx,
-    max_ex:     maxEx,
-    spread_pct: spreadPct,
-    min_price:  minPrice,
-    max_price:  maxPrice,
-    trust:      trust,
-    banned_at:  new Date().toUTCString(),
+    symbol: sym, min_ex: minEx, max_ex: maxEx,
+    spread_pct: spreadPct, min_price: minPrice, max_price: maxPrice,
+    trust, banned_at: new Date().toUTCString(),
   });
+  // Persist to server
+  fetch('/api/action/ban', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx,
+                          spread_pct: spreadPct, by: 'user'}),
+  }).catch(() => {});
   if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
   updateCounters();
   updateBanTab();
+  if (document.querySelector('.tab[data-t="analytics"]')?.classList.contains('on')) loadAnalytics();
 }
 
 function unbanItem(key) {
+  const item = bannedItems.get(key);
   bannedKeys.delete(key);
   bannedItems.delete(key);
+  // Move back to server unstable (so it stays excluded from analytics but visible in unstable tab)
+  if (item) {
+    serverUnstableKeys.add(key);
+    fetch('/api/action/unstable', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({symbol: item.symbol, min_ex: item.min_ex, max_ex: item.max_ex,
+                            spread_pct: item.spread_pct || 0, by: 'system',
+                            reason: 'unbanned — moved to unstable'}),
+    }).catch(() => {});
+  }
   renderBanList();
+  if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
   updateCounters();
   updateBanTab();
+  if (document.querySelector('.tab[data-t="analytics"]')?.classList.contains('on')) loadAnalytics();
 }
 
 function updateBanTab() {
@@ -635,6 +689,7 @@ function updateBanTab() {
 // ══════════════════════════════════════════════════════════════
 function renderAll(elapsed) {
   document.getElementById('loader').classList.add('gone');
+  rebuildAutoUnstable();
   const syms = Object.keys(allData);
   let alerts = 0, maxSpread = 0, stableCnt = 0, unstableCnt = 0, lockedCnt = 0;
   syms.forEach(s => {
@@ -643,9 +698,9 @@ function renderAll(elapsed) {
     if (a.spread_pct > maxSpread) maxSpread = a.spread_pct;
     const k = `${s}_${a.min_exchange}_${a.max_exchange}`;
     if (bannedKeys.has(k)) return;
-    if (isLocked(k))         lockedCnt++;
-    else if (isUnstable(k) || manuallyExcluded.has(k)) unstableCnt++;
-    else if (isStable(k))    stableCnt++;
+    if (isLocked(k))       lockedCnt++;
+    else if (isUnstable(k)) unstableCnt++;
+    else if (isStable(k))   stableCnt++;
   });
   document.getElementById('s-syms').textContent    = syms.length;
   document.getElementById('s-spread').textContent  = maxSpread.toFixed(3) + '%';
@@ -673,7 +728,7 @@ function renderAll(elapsed) {
 
   if (!frozen) renderSpreads();
   renderFunding();
-  renderOpps();
+  if (!oppFrozen) renderOpps();
   if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
   if (document.getElementById('tab-banlist').classList.contains('on'))  renderBanList();
 }
@@ -713,10 +768,9 @@ function renderSpreads() {
     })
     .filter(r => {
       const k = `${r.symbol}_${r.min_exchange}_${r.max_exchange}`;
-      if (bannedKeys.has(k))         return false;  // banned — never shown
-      if (manuallyExcluded.has(k))   return false;  // manually excluded → in unstable
-      if (isLocked(k))               return false;  // locked → in unstable
-      if (isUnstable(k))             return false;  // system unstable → in unstable
+      if (bannedKeys.has(k))   return false;  // banned — never shown
+      if (isUnstable(k))       return false;  // any unstable source → hidden
+      if (isLocked(k))         return false;  // locked → in unstable
       if (stableOnly && !isStable(k)) return false;
       return true;
     });
@@ -750,7 +804,7 @@ function renderSpreads() {
     const minEx  = (r.min_exchange||'').replace(/'/g,"\'");
     const maxEx  = (r.max_exchange||'').replace(/'/g,"\'");
     return `<tr class="${flash}${frozen?' frozen':''}">
-      <td class="td-exclude"><button class="exclude-btn" title="Move to Unstable" onclick="manualExclude('${sKey}')">⊗</button></td>
+      <td class="td-exclude"><button class="exclude-btn" title="Move to Unstable" onclick="manualExclude('${sKey}')"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="1" y1="1" x2="7" y2="7" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="1" x2="1" y2="7" stroke="#dc2626" stroke-width="1.5" stroke-linecap="round"/></svg></button></td>
       <td><span class="coin">${r.symbol}</span></td>
       <td><span class="sp ${sc}">${r.spread_pct.toFixed(4)}%</span></td>
       <td><a class="exlink" href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_exchange||'—'} +</span></a></td>
@@ -792,8 +846,9 @@ function renderFunding() {
 // OPPORTUNITIES
 // ══════════════════════════════════════════════════════════════
 function renderOpps() {
+  const src = oppFrozen && oppFrozenData ? oppFrozenData : allData;
   const cards = [];
-  Object.values(allData).forEach(d => {
+  Object.values(src).forEach(d => {
     (d.analysis.funding_opportunities||[]).forEach(o => {
       if (trustedOnly && (o.short_trust!=='high'||o.long_trust!=='high')) return;
       const sKey = `${d.symbol}_${o.short_exchange}_${o.long_exchange}`;
@@ -839,52 +894,55 @@ function renderUnstable() {
   Object.values(allData).forEach(d => {
     const a = d.analysis; if (!a) return;
     const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
-    if (bannedKeys.has(k)) return; // hidden — in ban list
-    const isManual  = manuallyExcluded.has(k);
-    const remType   = isManual ? 'manual' : 'system';
-    const midPrice  = (a.min_price && a.max_price) ? (a.min_price + a.max_price) / 2 : null;
-    const trust     = worstTrust(a.trust_map, a.min_exchange, a.max_exchange);
+    if (bannedKeys.has(k)) return;
+    if (!isUnstable(k) && !isLocked(k)) return;
 
+    // Determine removal type label
+    let remType = 'system';
+    if (manuallyExcluded.has(k))      remType = 'manual';
+    else if (serverUnstableKeys.has(k)) remType = 'system';
+    else if (autoUnstableKeys.has(k))   remType = 'system';
+
+    const midPrice = (a.min_price && a.max_price) ? (a.min_price + a.max_price) / 2 : null;
+    const trust    = worstTrust(a.trust_map, a.min_exchange, a.max_exchange);
     const item = {
       symbol: d.symbol, key: k, min_ex: a.min_exchange, max_ex: a.max_exchange,
       spread_pct: a.spread_pct, min_price: a.min_price, max_price: a.max_price,
       mid_price: midPrice, trust, removalType: remType,
     };
 
-    if (isLocked(k))                             lockedRows.push(item);
-    else if (isManual || isUnstable(k))          unstableRows.push(item);
+    if (isLocked(k)) lockedRows.push(item);
+    else             unstableRows.push(item);
   });
 
   linfo.style.display = lockedRows.length ? '' : 'none';
 
   if (!unstableRows.length && !lockedRows.length) {
-    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--t3);grid-column:1/-1"><p style="font-size:11px">No unstable alerts right now</p></div>`;
+    grid.innerHTML = `<div style="padding:40px;text-align:center;color:var(--t3);grid-column:1/-1"><p style="font-size:11px">No unstable pairs right now</p></div>`;
     return;
   }
 
   const buildCard = (r, locked) => {
-    const alive   = aliveStr(r.key);
-    const midStr  = r.mid_price != null ? '$' + fp(r.mid_price) : '—';
-    const minM    = exMeta[r.min_ex]||{}, maxM=exMeta[r.max_ex]||{};
-    const minUrl  = minM.futures_url?minM.futures_url.replace('{symbol}',r.symbol):'#';
-    const maxUrl  = maxM.futures_url?maxM.futures_url.replace('{symbol}',r.symbol):'#';
-    const cls     = locked ? 'locked-card' : 'unstable-card';
+    const alive    = aliveStr(r.key);
+    const midStr   = r.mid_price != null ? '$' + fp(r.mid_price) : '—';
+    const minM     = exMeta[r.min_ex]||{}, maxM = exMeta[r.max_ex]||{};
+    const minUrl   = minM.futures_url ? minM.futures_url.replace('{symbol}', r.symbol) : '#';
+    const maxUrl   = maxM.futures_url ? maxM.futures_url.replace('{symbol}', r.symbol) : '#';
+    const cls      = locked ? 'locked-card' : 'unstable-card';
     const remBadge = r.removalType === 'manual'
-      ? `<span class="badge manual-badge">Manual</span>`
-      : `<span class="badge system-badge">System</span>`;
+      ? `<span class="badge manual-badge">Manual Removal</span>`
+      : `<span class="badge system-badge">System Removal</span>`;
     const timeBadge = locked
       ? `<span class="badge locked-badge">LOCKED ${alive}</span>`
       : `<span class="badge unstable-badge">${alive}</span>`;
-    const excl    = locked ? `<div style="font-size:9px;color:#fb923c;margin-top:6px">Excluded from Total Gross</div>` : '';
-
-    // Escape for JS inline
-    const sym     = r.symbol.replace(/'/g,"\\'");
-    const minEx   = (r.min_ex||'').replace(/'/g,"\\'");
-    const maxEx   = (r.max_ex||'').replace(/'/g,"\\'");
-    const spPct   = (r.spread_pct||0).toFixed(6);
-    const minP    = (r.min_price||0).toFixed(8);
-    const maxP    = (r.max_price||0).toFixed(8);
-    const tr      = (r.trust||'medium').replace(/'/g,"\\'");
+    const excl = `<div style="font-size:9px;color:var(--t3);margin-top:4px">Excluded from analytics</div>`;
+    const sym  = r.symbol.replace(/'/g,"\\'");
+    const minEx = (r.min_ex||'').replace(/'/g,"\\'");
+    const maxEx = (r.max_ex||'').replace(/'/g,"\\'");
+    const spPct = (r.spread_pct||0).toFixed(6);
+    const minP  = (r.min_price||0).toFixed(8);
+    const maxP  = (r.max_price||0).toFixed(8);
+    const tr    = (r.trust||'medium').replace(/'/g,"\\'");
 
     return `<div class="${cls}">
       <div class="${cls}-hdr">
@@ -898,10 +956,10 @@ function renderUnstable() {
         <div class="opp-row"><span class="opp-rl">Mid Price</span><span class="opp-rv" style="color:var(--blue)">${midStr}</span></div>
         <div class="opp-row"><span class="opp-rl">Low / High</span><span class="opp-rv">$${fp(r.min_price)} / $${fp(r.max_price)}</span></div>
         <div class="opp-row"><span class="opp-rl">Trust</span><span class="opp-rv"><span class="tdot ${r.trust}"></span>${r.trust}</span></div>
-      </div>${excl}
+      </div>
+      ${excl}
       <div class="card-actions">
-        <button class="action-btn restore" onclick="restoreToMain('${r.key}')">↩ Restore</button>
-        <button class="action-btn ban-btn" onclick="banItem('${r.key}','${sym}','${minEx}','${maxEx}',${spPct},${minP},${maxP},'${tr}')">⊗ Ban</button>
+        <button class="action-btn ban-btn" onclick="banItem('${r.key}','${sym}','${minEx}','${maxEx}',${spPct},${minP},${maxP},'${tr}')">⊗ Ban permanently</button>
       </div>
     </div>`;
   };
@@ -911,6 +969,7 @@ function renderUnstable() {
     ...unstableRows.map(r => buildCard(r, false)),
   ].join('');
 }
+
 
 // ══════════════════════════════════════════════════════════════
 // BAN LIST TAB
@@ -1042,7 +1101,7 @@ function applyTimeFilter(d) {
     if (anTimeTo)   { const [h,m]=anTimeTo.split(':').map(Number);   if(hm>h*60+m) return false; }
     return true;
   });
-  const qual=d.records.filter(r=>(r.potential_pct||0)>=0.20);
+  const qual=d.records.filter(r=>(r.potential_pct||0)>=0.80);
   const tot=qual.reduce((a,r)=>a+(r.potential_pct||0),0);
   d.total_alerts=d.records.length; d.total_potential_pct=r4(tot);
   d.qualified_alerts=qual.length; d.avg_potential_pct=qual.length?r4(tot/qual.length):0;
@@ -1059,17 +1118,40 @@ function renderAnalytics(d) {
   }
   const cards = `<div class="an-cards">
     <div class="an-card"><div class="lbl">Total alerts</div><div class="val">${d.total_alerts}</div><div class="sub">${pLbl}</div></div>
-    <div class="an-card"><div class="lbl">Qualified ≥0.2%</div><div class="val y">${d.qualified_alerts}</div><div class="sub">of ${d.total_alerts}</div></div>
+    <div class="an-card"><div class="lbl">Active alerts</div><div class="val">${d.active_alerts ?? d.total_alerts}</div><div class="sub">excl. removed</div></div>
+    <div class="an-card"><div class="lbl">Qualified ≥0.8%</div><div class="val y">${d.qualified_alerts}</div><div class="sub">of active</div></div>
     <div class="an-card"><div class="lbl">Total gross</div><div class="val g">+${d.total_potential_pct.toFixed(4)}%</div><div class="sub">before fees</div></div>
     <div class="an-card"><div class="lbl">Avg per alert</div><div class="val">+${d.avg_potential_pct.toFixed(4)}%</div></div>
+    <div class="an-card"><div class="lbl">Excluded</div><div class="val r">${d.excluded_alerts ?? 0}</div><div class="sub">banned/unstable</div></div>
     <div class="an-card"><div class="lbl">Spread alerts</div><div class="val">${d.by_type?.spread||0}</div></div>
     <div class="an-card"><div class="lbl">Funding alerts</div><div class="val">${d.by_type?.funding||0}</div></div>
   </div>`;
   const tl    = d.timeline||[], maxC=Math.max(...tl.map(x=>x.count),1);
   const tlHtml= tl.slice(-48).map(x=>`<div class="tl-row"><span class="tl-time">${x.time.substring(5,16)}</span><div class="tl-bw"><div class="tl-bar" style="width:${(x.count/maxC*100).toFixed(1)}%"></div></div><span class="tl-val">${x.count}</span></div>`).join('');
-  const symRows=Object.entries(d.by_symbol||{}).map(([s,v])=>
-    `<tr><td><span class="coin">${s}</span></td><td style="font-family:var(--mono);color:var(--t2)">${v.count}</td><td style="font-family:var(--mono);color:var(--t3)">${v.qualified}</td><td style="font-family:var(--mono);color:var(--green)">+${v.total_pct.toFixed(4)}%</td><td style="font-family:var(--mono);color:var(--yellow)">+${v.best_pct.toFixed(4)}%</td></tr>`
-  ).join('');
+  const anExcl = new Set(d.analytics_excluded || []);
+  const symRows = Object.entries(d.by_symbol||{}).map(([s,v]) => {
+    const isExcl   = anExcl.has(s);
+    const pStatus  = v.pair_status || 'normal';
+    const remType  = v.removal_type || '';
+    const statusCell = pStatus === 'banned'
+      ? `<span class="badge ban-reason">Banned</span>`
+      : pStatus === 'unstable'
+        ? (remType === 'manual'
+            ? `<span class="badge manual-badge">Manual Removal</span>`
+            : `<span class="badge system-badge">System Removal</span>`)
+        : '';
+    const rowStyle = pStatus !== 'normal' ? 'opacity:.5;' : '';
+    const xBtn = !isExcl
+      ? `<button onclick="excludeCoinAnalytics('${s}')" title="Exclude from analytics" style="background:none;border:1px solid var(--rbr);color:var(--red);border-radius:50%;width:16px;height:16px;cursor:pointer;font-size:9px;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0"><svg width="6" height="6" viewBox="0 0 6 6"><line x1="1" y1="1" x2="5" y2="5" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round"/><line x1="5" y1="1" x2="1" y2="5" stroke="#dc2626" stroke-width="1.3" stroke-linecap="round"/></svg></button>`
+      : `<button onclick="includeCoinAnalytics('${s}')" title="Re-include in analytics" style="background:var(--gbg);border:1px solid var(--gbr);color:var(--green);border-radius:10px;padding:1px 6px;font-size:9px;cursor:pointer;margin-left:4px">↩</button>`;
+    return `<tr style="${rowStyle}">
+      <td><span class="coin">${s}</span>${xBtn}${statusCell}</td>
+      <td style="font-family:var(--mono);color:var(--t2)">${v.count}</td>
+      <td style="font-family:var(--mono);color:var(--t3)">${isExcl ? '<span style="color:var(--red)">excluded</span>' : v.qualified}</td>
+      <td style="font-family:var(--mono);color:var(--green)">${isExcl ? '—' : '+'+v.total_pct.toFixed(4)+'%'}</td>
+      <td style="font-family:var(--mono);color:var(--yellow)">+${v.best_pct.toFixed(4)}%</td>
+    </tr>`;
+  }).join('');
   cont.innerHTML = `${cards}
     <div class="an-section"><h3>Timeline (UTC)</h3><div class="timeline">${tlHtml||'<div style="padding:16px;color:var(--t3);font-size:11px">No data</div>'}</div></div>
     <div class="an-section"><h3>By Coin</h3><div class="tw"><table>
@@ -1121,6 +1203,19 @@ function filterRecords() {
   _recMinG = parseFloat(document.getElementById('rec-min-gross')?.value)||0;
   if (anData) renderRecords(anData);
 }
+function excludeCoinAnalytics(symbol) {
+  fetch('/api/action/exclude_coin', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({symbol, action:'exclude'}),
+  }).then(()=>loadAnalytics()).catch(()=>{});
+}
+function includeCoinAnalytics(symbol) {
+  fetch('/api/action/exclude_coin', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({symbol, action:'include'}),
+  }).then(()=>loadAnalytics()).catch(()=>{});
+}
+
 function renderRecords(d) {
   let recs = (d.records||[]);
   if (_recCoin) recs = recs.filter(r=>r.symbol===_recCoin);
@@ -1133,13 +1228,23 @@ function renderRecords(d) {
     const ts   = new Date(r.ts*1000).toUTCString().replace(' GMT','');
     const pair = r.type==='spread'?`${r.buy_exchange||'?'} > ${r.sell_exchange||'?'}`:`${r.long_exchange||'?'} / ${r.short_exchange||'?'}`;
     const tc   = r.trust_level==='high'?'var(--green)':r.trust_level==='low'?'var(--red)':'var(--yellow)';
-    return `<div class="ar-row">
+    const ps   = r._pair_status || 'normal';
+    const rt   = r._removal_type || '';
+    const statusTag = ps === 'banned'
+      ? `<span class="badge ban-reason" style="font-size:8px">banned</span>`
+      : ps === 'unstable'
+        ? (rt === 'manual'
+            ? `<span class="badge manual-badge" style="font-size:8px">manual removal</span>`
+            : `<span class="badge system-badge" style="font-size:8px">system removal</span>`)
+        : '';
+    const rowStyle = ps !== 'normal' ? 'opacity:.45;' : '';
+    return `<div class="ar-row" style="${rowStyle}">
       <span style="font-family:var(--mono);font-size:9px;color:var(--t3)">${ts.split(' ').slice(1,5).join(' ')}</span>
       <span style="font-family:var(--mono);font-size:9px;color:var(--t4)">${r.alert_id||'—'}</span>
       <span class="coin" style="font-size:11px">${r.symbol}</span>
       <span class="badge ${r.type==='spread'?'spread-t':'funding-t'}">${r.type}</span>
-      <span style="font-size:10px;color:var(--t3)">${pair}</span>
-      <span style="font-family:var(--mono);font-size:10px;color:var(--green)">+${(r.potential_pct||0).toFixed(4)}%</span>
+      <span style="font-size:10px;color:var(--t3)">${pair} ${statusTag}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:${ps!=='normal'?'var(--t3)':'var(--green)'}">${ps!=='normal'?'excl':''}+${(r.potential_pct||0).toFixed(4)}%</span>
       <span style="font-size:10px;color:${tc}">${r.trust_level||'?'}</span>
     </div>`;
   }).join('');
@@ -1364,9 +1469,19 @@ document.querySelectorAll('[data-fex]').forEach(b => {
 // Opp chips
 togIncludeChip('btn-trusted',    ()=>trustedOnly,   v=>{trustedOnly=v;},   renderOpps);
 togIncludeChip('btn-opp-stable', ()=>oppStableOnly,  v=>{oppStableOnly=v;},  renderOpps);
+
+// Opp freeze
+document.getElementById('btn-opp-freeze').addEventListener('click', function() {
+  oppFrozen = !oppFrozen;
+  if (oppFrozen) { oppFrozenData=JSON.parse(JSON.stringify(allData)); this.textContent='Unfreeze'; this.classList.add('on'); }
+  else { oppFrozenData=null; this.textContent='Freeze'; this.classList.remove('on'); renderOpps(); }
+});
+
 document.getElementById('btn-opp-reset').addEventListener('click', () => {
-  trustedOnly=oppStableOnly=false;
+  trustedOnly=oppStableOnly=oppFrozen=false; oppFrozenData=null;
   ['btn-trusted','btn-opp-stable'].forEach(id=>document.getElementById(id).classList.remove('f-active'));
+  const fb=document.getElementById('btn-opp-freeze');
+  fb.classList.remove('on'); fb.textContent='Freeze';
   renderOpps();
 });
 
@@ -1387,6 +1502,7 @@ document.querySelectorAll('th[data-col]').forEach(th => {
 // UPDATE COUNTERS (lightweight, no full re-render)
 // ══════════════════════════════════════════════════════════════
 function updateCounters() {
+  rebuildAutoUnstable();
   const syms=Object.keys(allData);
   let stableCnt=0,unstableCnt=0,lockedCnt=0;
   syms.forEach(s=>{
@@ -1394,7 +1510,7 @@ function updateCounters() {
     const k=`${s}_${a.min_exchange}_${a.max_exchange}`;
     if(bannedKeys.has(k)) return;
     if(isLocked(k)) lockedCnt++;
-    else if(isUnstable(k)||manuallyExcluded.has(k)) unstableCnt++;
+    else if(isUnstable(k)) unstableCnt++;
     else if(isStable(k)) stableCnt++;
   });
   document.getElementById('s-stable').textContent=stableCnt;
@@ -1412,20 +1528,51 @@ function updateCounters() {
 // FETCH LOOP — 200ms polling
 // ══════════════════════════════════════════════════════════════
 let _fetching = false;
+let _lastStatusPoll = 0;
+
 async function fetchData() {
   if (_fetching) return;
   _fetching = true;
   try {
-    const [dr,er] = await Promise.all([fetch('/api/data'), fetch('/api/exchanges')]);
-    const d=await dr.json(), e=await er.json();
+    const [dr, er] = await Promise.all([fetch('/api/data'), fetch('/api/exchanges')]);
+    const d = await dr.json(), e = await er.json();
     exMeta = e;
+
+    // Poll pair_statuses every 5s to sync server state
+    const now = Date.now();
+    if (now - _lastStatusPoll > 5000) {
+      _lastStatusPoll = now;
+      fetch('/api/pair_statuses').then(r => r.json()).then(ps => {
+        Object.values(ps).forEach(v => {
+          const key = `${v.symbol}_${v.min_exchange}_${v.max_exchange}`;
+          if (v.status === 'unstable' && !bannedKeys.has(key)) {
+            serverUnstableKeys.add(key);
+            // If server says unstable by system, ensure not in manuallyExcluded
+            // (system removal takes over — idempotent)
+          }
+          if (v.status === 'banned') {
+            bannedKeys.add(key);
+            serverUnstableKeys.delete(key);
+            if (!bannedItems.has(key)) {
+              bannedItems.set(key, {
+                symbol: v.symbol, min_ex: v.min_exchange, max_ex: v.max_exchange,
+                spread_pct: v.spread_pct_at_removal || 0, trust: 'medium',
+                banned_at: v.removed_at || '—',
+              });
+            }
+          }
+        });
+        updateBanTab();
+      }).catch(() => {});
+    }
+
     if (d.cache && d.cache.data) {
-      scanInterval = d.scan_interval||2;
-      scanCount    = d.scan_count||0;
-      lastTs       = d.cache.ts||0;
+      scanInterval = d.scan_interval || 2;
+      scanCount    = d.scan_count    || 0;
+      lastTs       = d.cache.ts      || 0;
       allData      = d.cache.data;
       updateStableMap();
-      const newTs = d.cache.ts||0;
+      const newTs = d.cache.ts || 0;
       if (newTs !== lastDataTs) {
         lastDataTs = newTs;
         renderAll(d.cache.elapsed);
@@ -1435,7 +1582,7 @@ async function fetchData() {
       setStatus('live');
     }
   } catch(err) { setStatus('err'); }
-  finally { _fetching=false; }
+  finally { _fetching = false; }
 }
 
 function setStatus(s){

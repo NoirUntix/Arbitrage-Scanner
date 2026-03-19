@@ -2,7 +2,7 @@
 Arbitrage Scanner Web Server  —  python server.py  →  http://localhost:5000
 """
 
-import asyncio, json, threading, time, logging, urllib.request, urllib.error
+import asyncio, json, threading, time, logging, urllib.request, urllib.error, os
 from flask import Flask, jsonify, send_from_directory, request
 from scanner import scan_all, EXCHANGE_META, WITHDRAWAL_STATUS
 from history import record_alerts, load_range, compute_analytics, get_active_alerts
@@ -20,6 +20,8 @@ MIN_INTERVAL = 2.0
 _exchange_health    = {}
 _exchange_health_ts = 0
 HEALTH_REFRESH_SEC  = 60
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 
 # ── Live exchange health checker ──────────────────────────────────────────────
@@ -42,7 +44,6 @@ def _check_binance():
         details.append("Futures API: OK")
     else:
         issues.append("Futures API unreachable")
-    # Liquidity probe
     code2, body2 = _fetch("https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=5", 4)
     if code2 == 200:
         try:
@@ -332,45 +333,164 @@ def api_news():
     ]})
 
 
+# ── AI Chat — full LLM with web search and arbitrage context ──────────────────
+
+def _build_scan_summary():
+    """Build a compact summary of current live scan data for the AI."""
+    data = _cache.get("data", {})
+    if not data:
+        return "No live scan data available yet."
+    lines = []
+    top_spreads = sorted(
+        [(sym, d["analysis"]) for sym, d in data.items() if d.get("analysis", {}).get("spread_pct", 0) > 0],
+        key=lambda x: x[1]["spread_pct"], reverse=True
+    )[:8]
+    if top_spreads:
+        lines.append("TOP LIVE SPREADS:")
+        for sym, a in top_spreads:
+            lines.append(f"  {sym}: {a['spread_pct']:.4f}% ({a.get('min_exchange','?')} → {a.get('max_exchange','?')})")
+    top_funding = []
+    for sym, d in data.items():
+        for opp in (d.get("analysis", {}).get("funding_opportunities", []) or [])[:1]:
+            top_funding.append((sym, opp))
+    top_funding.sort(key=lambda x: x[1].get("diff_pct", 0), reverse=True)
+    if top_funding[:6]:
+        lines.append("TOP LIVE FUNDING DIFFS:")
+        for sym, opp in top_funding[:6]:
+            lines.append(
+                f"  {sym}: +{opp['diff_pct']:.4f}%/8h — SHORT {opp['short_exchange']}, LONG {opp['long_exchange']}"
+            )
+    return "\n".join(lines) if lines else "No significant opportunities at this moment."
+
+
 @app.route("/api/ai_chat", methods=["POST"])
 def api_ai_chat():
-    body    = request.get_json(force=True) or {}
-    message = body.get("message", "").strip().lower()
-    period  = body.get("period", "day")
-    coin    = body.get("coin", None) or None
-    days    = {"day": 1, "week": 7, "month": 30}.get(period, 1)
-    an      = compute_analytics(load_range(days), coin_filter=coin)
+    body     = request.get_json(force=True) or {}
+    messages = body.get("messages", [])
+    period   = body.get("period", "day")
+    coin     = body.get("coin", None) or None
+    days     = {"day": 1, "week": 7, "month": 30}.get(period, 1)
+    an       = compute_analytics(load_range(days), coin_filter=coin)
+    scan_summary = _build_scan_summary()
 
-    def fmt_pct(v): return f"+{v:.4f}%"
+    top_coins = list(an.get("by_symbol", {}).keys())[:6]
+    best      = an.get("best_opportunity")
+    best_str  = ""
+    if best:
+        pair = (f"{best.get('buy_exchange','?')} → {best.get('sell_exchange','?')}"
+                if best["type"] == "spread"
+                else f"SHORT {best.get('short_exchange','?')}, LONG {best.get('long_exchange','?')}")
+        best_str = f"{best['symbol']} {best['type'].upper()} {pair} +{best.get('potential_pct',0):.4f}%"
+
+    system_prompt = f"""You are an expert crypto perpetual futures and funding rate arbitrage assistant, integrated into a live multi-exchange scanner. You have deep expertise in derivatives markets, cross-exchange arbitrage, funding rate mechanics, basis trading, and risk management.
+
+LIVE SCANNER DATA ({period}):
+- Total alerts: {an['total_alerts']} | Qualified (≥0.2% gross): {an['qualified_alerts']}
+- Total gross potential: +{an['total_potential_pct']:.4f}% (before fees)
+- Spread alerts: {an['by_type'].get('spread', 0)} | Funding alerts: {an['by_type'].get('funding', 0)}
+- Top coins by activity: {', '.join(top_coins) if top_coins else 'none'}
+- Best alert: {best_str if best_str else 'none recorded'}
+
+{scan_summary}
+
+SCANNER CONFIGURATION:
+- Exchanges monitored: Binance, Bybit, OKX, MEXC, Gate.io, KuCoin, Bitget, CoinEx, Bitmart
+- Symbols tracked: 45 (large cap, mid cap, DeFi, L2, meme, AI/infra)
+- Scan interval: every 2 seconds (async parallel API calls)
+- Funding rate cycle: 8h (annualised = rate × 1095)
+- Alert thresholds: spread ≥ 0.15%, funding diff ≥ 0.03%/8h
+
+ARBITRAGE MECHANICS:
+- Price spread arb: BUY on lower-price exchange, simultaneously SELL on higher-price exchange. Gross = spread %. Net after fees ≈ gross − 0.1% (0.05% per side maker).
+- Funding rate arb: SHORT on high-rate exchange, LONG on low-rate exchange. Collect the rate difference every 8h. Delta-neutral if sized equally. Execution risk: rate can change at settlement.
+- Trust levels: high (Binance/Bybit/OKX/KuCoin), medium (MEXC/Gate.io/Bitget/CoinEx), low (Bitmart).
+- Key risks: withdrawal delays, slippage on thin order books, funding rate reversals, liquidation on leveraged legs.
+- Mid price = (max_price + min_price) / 2 — used as consolidation reference point.
+
+You can search the web for current crypto news, market conditions, funding rate context, or any market information. Be direct, expert, and actionable. Keep answers concise unless depth is requested. Always flag key risks when discussing opportunities."""
+
+    # ── Call Anthropic API ────────────────────────────────────────────────────
+    if not ANTHROPIC_API_KEY:
+        # Graceful fallback: simple keyword analytics mode
+        return _simple_ai_fallback(an, messages, period)
+
+    try:
+        payload = {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 1000,
+            "system": system_prompt,
+            "messages": messages,
+            "tools": [{"type": "web_search_20250305", "name": "web_search"}],
+        }
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type":    "application/json",
+                "x-api-key":       ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "anthropic-beta":  "web-search-2025-03-05",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+
+        reply = " ".join(
+            block.get("text", "") for block in result.get("content", [])
+            if block.get("type") == "text"
+        ).strip()
+
+        return jsonify({"reply": reply or "No response generated.", "ai_mode": "full"})
+
+    except urllib.error.HTTPError as e:
+        body_err = e.read().decode("utf-8", errors="ignore")
+        log.error(f"Anthropic API HTTP {e.code}: {body_err[:200]}")
+        return jsonify({"reply": f"AI API error {e.code} — check ANTHROPIC_API_KEY and quota.", "ai_mode": "error"})
+    except Exception as e:
+        log.error(f"AI chat error: {e}")
+        return _simple_ai_fallback(an, messages, period)
+
+
+def _simple_ai_fallback(an, messages, period):
+    """Keyword-based fallback when no API key is set."""
+    message = (messages[-1].get("content", "") if messages else "").strip().lower()
+
+    def fmt(v): return f"+{v:.4f}%"
 
     reply = None
     if any(k in message for k in ["best", "top", "biggest", "highest"]):
         b = an.get("best_opportunity")
         if b:
-            pair = (f"{b.get('buy_exchange','?')} -> {b.get('sell_exchange','?')}" if b["type"]=="spread"
-                    else f"{b.get('long_exchange','?')} / {b.get('short_exchange','?')}")
-            reply = f"Best ({period}): {b['symbol']} {b['type'].upper()}\nGross: {fmt_pct(b.get('potential_pct',0))}\nPair: {pair}"
+            pair = (f"{b.get('buy_exchange','?')} → {b.get('sell_exchange','?')}" if b["type"] == "spread"
+                    else f"SHORT {b.get('short_exchange','?')}, LONG {b.get('long_exchange','?')}")
+            reply = f"Best ({period}): {b['symbol']} {b['type'].upper()}\nGross: {fmt(b.get('potential_pct',0))}\nPair: {pair}"
         else:
             reply = "No opportunities yet."
-    elif any(k in message for k in ["how many", "count", "total"]):
+    elif any(k in message for k in ["how many", "count", "total alerts"]):
         reply = (f"{period}: {an['total_alerts']} alerts, {an['qualified_alerts']} qualified.\n"
                  f"Spread: {an['by_type'].get('spread',0)}, Funding: {an['by_type'].get('funding',0)}")
     elif any(k in message for k in ["earn", "profit", "gross"]):
-        reply = (f"Gross ({period}): {fmt_pct(an['total_potential_pct'])} "
-                 f"from {an['qualified_alerts']} qualified alerts. Avg: {fmt_pct(an['avg_potential_pct'])}")
+        reply = (f"Gross ({period}): {fmt(an['total_potential_pct'])} "
+                 f"from {an['qualified_alerts']} qualified alerts. Avg: {fmt(an['avg_potential_pct'])}")
     elif any(k in message for k in ["coin", "symbol"]):
         top = list(an["by_symbol"].items())[:3]
         reply = "Top coins: " + ", ".join(f"{s} ({v['qualified']} alerts)" for s,v in top) if top else "No data."
     else:
         reply = (f"Summary ({period}): {an['total_alerts']} alerts, "
-                 f"{an['qualified_alerts']} qualified, gross {fmt_pct(an['total_potential_pct'])}.")
+                 f"{an['qualified_alerts']} qualified, gross {fmt(an['total_potential_pct'])}.\n"
+                 f"Set ANTHROPIC_API_KEY environment variable to enable full AI mode with web search.")
 
-    return jsonify({"reply": reply})
+    return jsonify({"reply": reply, "ai_mode": "fallback"})
 
 
 # ── Start ─────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    if ANTHROPIC_API_KEY:
+        log.info("Anthropic API key detected — full AI mode enabled")
+    else:
+        log.warning("ANTHROPIC_API_KEY not set — AI assistant running in fallback mode")
     threading.Thread(target=health_refresh_loop, daemon=True).start()
     threading.Thread(target=background_scanner,  daemon=True).start()
     app.run(host="0.0.0.0", port=5000, debug=False, threaded=True)

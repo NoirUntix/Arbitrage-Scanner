@@ -1,0 +1,173 @@
+[2026-03-19 23:11:38 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:11:44 UTC] BAN_PAIR               MKR Binance/Gate.io — coin_id=COIN-00013 spread=1.7999% by=user
+[2026-03-19 23:11:45 UTC] BAN_PAIR               FTM Binance/Gate.io — coin_id=COIN-00005 spread=4.7910% by=user
+[2026-03-19 23:11:46 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:11:50 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:11:53 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:11:55 UTC] MANUAL_UNSTABLE        IMX OKX/KuCoin — coin_id=COIN-00082 spread=0.3111%
+[2026-03-19 23:11:56 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:05 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:12 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:16 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:19 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:20 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:27 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:29 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:32 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:12:36 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:37 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:49 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:12:49 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:12:58 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:13:13 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:13:14 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:13:18 UTC] TAB_SWITCH             opps
+[2026-03-19 23:13:18 UTC] TAB_SWITCH             funding
+[2026-03-19 23:13:19 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:13:46 UTC] TAB_SWITCH             funding
+[2026-03-19 23:13:47 UTC] TAB_SWITCH             opps
+[2026-03-19 23:14:16 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:15:59 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:16:08 UTC] MANUAL_UNSTABLE        DYDX OKX/Binance — coin_id=COIN-00023 spread=0.4204%
+[2026-03-19 23:16:09 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:16:17 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:16:24 UTC] MANUAL_UNSTABLE        DYDX Gate.io/Binance — coin_id=COIN-00136 spread=0.3501%
+[2026-03-19 23:16:29 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:16:33 UTC] BAN_PAIR               DYDX Gate.io/Binance — coin_id=COIN-00136 spread=0.3501% by=user
+[2026-03-19 23:16:34 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:16:56 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:17:45 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:17:46 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:17:58 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:18:17 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:18:18 UTC] MANUAL_UNSTABLE        IMX Bybit/KuCoin — coin_id=COIN-00031 spread=0.5740%
+[2026-03-19 23:18:18 UTC] MANUAL_UNSTABLE        DYDX CoinEx/Binance — coin_id=COIN-00104 spread=0.4673%
+[2026-03-19 23:18:19 UTC] MANUAL_UNSTABLE        JTO Binance/KuCoin — coin_id=COIN-00058 spread=0.3733%
+[2026-03-19 23:18:20 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:18:22 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:23 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:29 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:18:31 UTC] MANUAL_UNSTABLE        DOGE OKX/CoinEx — coin_id=COIN-00187 spread=0.0267%
+[2026-03-19 23:18:35 UTC] MANUAL_UNSTABLE        DOGE OKX/KuCoin — coin_id=COIN-00188 spread=0.0535%
+[2026-03-19 23:18:37 UTC] MANUAL_UNSTABLE        DOGE OKX/Binance — coin_id=COIN-00191 spread=0.0642%
+[2026-03-19 23:18:44 UTC] TAB_SWITCH             funding
+[2026-03-19 23:18:44 UTC] TAB_SWITCH             opps
+[2026-03-19 23:18:45 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:45 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:45 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:45 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:46 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:18:46 UTC] TAB_SWITCH             exchanges
+[2026-03-19 23:18:46 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:18:46 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:47 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:47 UTC] TAB_SWITCH             opps
+[2026-03-19 23:18:47 UTC] TAB_SWITCH             funding
+[2026-03-19 23:18:48 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:18:48 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:48 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:49 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:18:49 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:18:49 UTC] TAB_SWITCH             exchanges
+[2026-03-19 23:18:49 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:18:50 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:20:07 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:24:37 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:27:04 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:27:04 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:27:20 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:27:29 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:27:31 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:27:47 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:28:40 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:28:45 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:28:48 UTC] MANUAL_UNSTABLE        DYDX Binance/KuCoin — coin_id=COIN-00069 spread=0.9412%
+[2026-03-19 23:28:49 UTC] MANUAL_UNSTABLE        JTO Gate.io/KuCoin — coin_id=COIN-00053 spread=0.9212%
+[2026-03-19 23:28:50 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:28:52 UTC] BAN_PAIR               FTM Binance/Gate.io — coin_id=COIN-00005 spread=4.7910% by=user
+[2026-03-19 23:28:55 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:29:00 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:29:01 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:29:05 UTC] BAN_PAIR               MKR Binance/Gate.io — coin_id=COIN-00018 spread=1.7999% by=user
+[2026-03-19 23:29:05 UTC] BAN_PAIR               JTO Gate.io/KuCoin — coin_id=COIN-00053 spread=0.9212% by=user
+[2026-03-19 23:29:06 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:29:07 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:29:09 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:29:20 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:29:37 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:29:41 UTC] TAB_SWITCH             unstable
+[2026-03-19 23:29:41 UTC] TAB_SWITCH             opps
+[2026-03-19 23:29:41 UTC] TAB_SWITCH             funding
+[2026-03-19 23:29:42 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:29:49 UTC] TAB_SWITCH             banlist
+[2026-03-19 23:29:49 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:29:50 UTC] TAB_SWITCH             exchanges
+[2026-03-19 23:29:50 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:30:08 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:30:17 UTC] TAB_SWITCH             spreads
+[2026-03-19 23:30:47 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:30:57 UTC] EXCLUDE_COIN_ANALYTICS 1INCH
+[2026-03-19 23:32:13 UTC] TAB_SWITCH             analytics
+[2026-03-19 23:32:18 UTC] EXCLUDE_COIN_ANALYTICS DYDX
+[2026-03-20 06:28:40 UTC] TAB_SWITCH             exchanges
+[2026-03-20 06:28:40 UTC] TAB_SWITCH             analytics
+[2026-03-20 06:43:42 UTC] EXCLUDE_COIN_ANALYTICS AAVE
+[2026-03-20 06:43:48 UTC] EXCLUDE_COIN_ANALYTICS APT
+[2026-03-20 13:31:57 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:33:20 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:33:20 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:20 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:33:21 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:33:21 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:22 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:33:22 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:33:22 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:23 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:33:25 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:25 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:25 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:33:25 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:33:26 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:34:33 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:34:49 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:34:57 UTC] EXCLUDE_COIN_ANALYTICS BCH
+[2026-03-20 13:35:01 UTC] EXCLUDE_COIN_ANALYTICS BLUR
+[2026-03-20 13:38:01 UTC] EXCLUDE_COIN_ANALYTICS ORDI
+[2026-03-20 13:38:11 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:38:11 UTC] TAB_SWITCH             opps
+[2026-03-20 13:38:12 UTC] TAB_SWITCH             funding
+[2026-03-20 13:38:13 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:38:13 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:38:15 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:38:20 UTC] EXCLUDE_COIN_ANALYTICS PYTH
+[2026-03-20 13:41:51 UTC] EXCLUDE_COIN_ANALYTICS GRT
+[2026-03-20 13:41:59 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:42:02 UTC] MANUAL_UNSTABLE        ATOM Gate.io/Bybit — coin_id=COIN-00338 spread=0.0999%
+[2026-03-20 13:42:03 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:42:11 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:42:14 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:42:30 UTC] MANUAL_UNSTABLE        SHIB CoinEx/KuCoin — coin_id=COIN-00425 spread=0.1364%
+[2026-03-20 13:42:39 UTC] TAB_SWITCH             unstable
+[2026-03-20 13:42:40 UTC] TAB_SWITCH             banlist
+[2026-03-20 13:42:40 UTC] TAB_SWITCH             funding
+[2026-03-20 13:42:41 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:48:59 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:49:23 UTC] TAB_SWITCH             spreads
+[2026-03-20 13:49:41 UTC] TAB_SWITCH             analytics
+[2026-03-20 13:50:13 UTC] EXCLUDE_COIN_ANALYTICS ATOM
+[2026-03-20 13:50:26 UTC] TAB_SWITCH             spreads
+[2026-03-20 21:05:15 UTC] TAB_SWITCH             opps
+[2026-03-20 21:05:16 UTC] TAB_SWITCH             banlist
+[2026-03-20 21:05:17 UTC] TAB_SWITCH             analytics
+[2026-03-20 21:05:18 UTC] TAB_SWITCH             spreads
+[2026-03-20 21:05:21 UTC] TAB_SWITCH             funding
+[2026-03-20 21:05:21 UTC] TAB_SWITCH             opps
+[2026-03-20 21:05:21 UTC] TAB_SWITCH             funding
+[2026-03-20 21:05:21 UTC] TAB_SWITCH             spreads
+[2026-03-20 21:05:48 UTC] TAB_SWITCH             unstable
+[2026-03-20 21:05:49 UTC] TAB_SWITCH             banlist
+[2026-03-20 21:05:49 UTC] TAB_SWITCH             unstable
+[2026-03-20 21:06:09 UTC] TAB_SWITCH             banlist
+[2026-03-20 21:06:09 UTC] TAB_SWITCH             unstable
+[2026-03-20 21:06:10 UTC] TAB_SWITCH             spreads
+[2026-03-20 21:06:12 UTC] TAB_SWITCH             unstable

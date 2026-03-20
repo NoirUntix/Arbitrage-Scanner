@@ -1,0 +1,52 @@
+[2026-03-19 23:11:31 UTC] UNSTABLE COIN-00005 FTM Binance↔Gate.io spread=4.7910% by=system — auto: spread 4.7910% > 1.0%
+[2026-03-19 23:11:31 UTC] UNSTABLE COIN-00013 MKR Binance↔Gate.io spread=1.7999% by=system — auto: spread 1.7999% > 1.0%
+[2026-03-19 23:11:55 UTC] UNSTABLE COIN-00082 IMX OKX↔KuCoin spread=0.3111% by=user — manual removal
+[2026-03-19 23:16:08 UTC] UNSTABLE COIN-00023 DYDX OKX↔Binance spread=0.4204% by=user — manual removal
+[2026-03-19 23:16:24 UTC] UNSTABLE COIN-00136 DYDX Gate.io↔Binance spread=0.3501% by=user — manual removal
+[2026-03-19 23:18:18 UTC] UNSTABLE COIN-00031 IMX Bybit↔KuCoin spread=0.5740% by=user — manual removal
+[2026-03-19 23:18:18 UTC] UNSTABLE COIN-00104 DYDX CoinEx↔Binance spread=0.4673% by=user — manual removal
+[2026-03-19 23:18:19 UTC] UNSTABLE COIN-00058 JTO Binance↔KuCoin spread=0.3733% by=user — manual removal
+[2026-03-19 23:18:31 UTC] UNSTABLE COIN-00187 DOGE OKX↔CoinEx spread=0.0267% by=user — manual removal
+[2026-03-19 23:18:35 UTC] UNSTABLE COIN-00188 DOGE OKX↔KuCoin spread=0.0535% by=user — manual removal
+[2026-03-19 23:18:37 UTC] UNSTABLE COIN-00191 DOGE OKX↔Binance spread=0.0642% by=user — manual removal
+[2026-03-19 23:28:37 UTC] UNSTABLE COIN-00005 FTM Binance↔Gate.io spread=4.7910% by=system — auto: spread 4.7910% > 1.0%
+[2026-03-19 23:28:37 UTC] UNSTABLE COIN-00018 MKR Binance↔Gate.io spread=1.7999% by=system — auto: spread 1.7999% > 1.0%
+[2026-03-19 23:28:48 UTC] UNSTABLE COIN-00069 DYDX Binance↔KuCoin spread=0.9412% by=user — manual removal
+[2026-03-19 23:28:49 UTC] UNSTABLE COIN-00053 JTO Gate.io↔KuCoin spread=0.9212% by=user — manual removal
+[2026-03-19 23:58:13 UTC] UNSTABLE COIN-00145 DYDX Binance↔Bybit spread=1.1176% by=system — auto: spread 1.1176% > 1.0%
+[2026-03-20 00:00:16 UTC] UNSTABLE COIN-00149 BLUR Gate.io↔CoinEx spread=1.2584% by=system — auto: spread 1.2584% > 1.0%
+[2026-03-20 00:13:39 UTC] UNSTABLE COIN-00026 DYDX Binance↔Gate.io spread=1.3529% by=system — auto: spread 1.3529% > 1.0%
+[2026-03-20 00:25:59 UTC] UNSTABLE COIN-00055 JTO Binance↔KuCoin spread=1.1070% by=system — auto: spread 1.1070% > 1.0%
+[2026-03-20 00:36:51 UTC] UNSTABLE COIN-00276 DYDX OKX↔Binance spread=1.2924% by=system — auto: spread 1.2924% > 1.0%
+[2026-03-20 01:28:44 UTC] UNSTABLE COIN-00086 JTO Gate.io↔CoinEx spread=1.0621% by=system — auto: spread 1.0621% > 1.0%
+[2026-03-20 02:03:50 UTC] UNSTABLE COIN-00111 DYDX CoinEx↔Binance spread=1.0333% by=system — auto: spread 1.0333% > 1.0%
+[2026-03-20 02:55:09 UTC] UNSTABLE COIN-00322 DYDX CoinEx↔KuCoin spread=1.0286% by=system — auto: spread 1.0286% > 1.0%
+[2026-03-20 03:40:07 UTC] UNSTABLE COIN-00288 DYDX MEXC↔Binance spread=1.0216% by=system — auto: spread 1.0216% > 1.0%
+[2026-03-20 04:43:07 UTC] UNSTABLE COIN-00031 1INCH Binance↔KuCoin spread=1.0449% by=system — auto: spread 1.0449% > 1.0%
+[2026-03-20 06:39:07 UTC] UNSTABLE COIN-00025 GRT Bybit↔KuCoin spread=1.0586% by=system — auto: spread 1.0586% > 1.0%
+[2026-03-20 06:39:18 UTC] UNSTABLE COIN-00024 GRT Binance↔KuCoin spread=1.0586% by=system — auto: spread 1.0586% > 1.0%
+[2026-03-20 06:40:56 UTC] UNSTABLE COIN-00216 GRT OKX↔KuCoin spread=1.3652% by=system — auto: spread 1.3652% > 1.0%
+[2026-03-20 06:48:22 UTC] UNSTABLE COIN-00311 GRT CoinEx↔KuCoin spread=1.1045% by=system — auto: spread 1.1045% > 1.0%
+[2026-03-20 06:53:16 UTC] UNSTABLE COIN-00290 GRT MEXC↔KuCoin spread=1.0968% by=system — auto: spread 1.0968% > 1.0%
+[2026-03-20 07:01:42 UTC] UNSTABLE COIN-00043 STX CoinEx↔KuCoin spread=1.0134% by=system — auto: spread 1.0134% > 1.0%
+[2026-03-20 08:37:19 UTC] UNSTABLE COIN-00348 ORDI Bybit↔CoinEx spread=1.0560% by=system — auto: spread 1.0560% > 1.0%
+[2026-03-20 08:37:26 UTC] UNSTABLE COIN-00253 ORDI Binance↔CoinEx spread=1.0560% by=system — auto: spread 1.0560% > 1.0%
+[2026-03-20 08:38:05 UTC] UNSTABLE COIN-00142 ORDI Gate.io↔CoinEx spread=1.0113% by=system — auto: spread 1.0113% > 1.0%
+[2026-03-20 09:21:11 UTC] UNSTABLE COIN-00050 BLUR CoinEx↔KuCoin spread=1.0497% by=system — auto: spread 1.0497% > 1.0%
+[2026-03-20 09:26:20 UTC] UNSTABLE COIN-00611 BCH Bybit↔Binance spread=1.1671% by=system — auto: spread 1.1671% > 1.0%
+[2026-03-20 09:26:23 UTC] UNSTABLE COIN-00475 BCH CoinEx↔Binance spread=1.2097% by=system — auto: spread 1.2097% > 1.0%
+[2026-03-20 11:01:50 UTC] UNSTABLE COIN-00059 PYTH Gate.io↔CoinEx spread=1.1697% by=system — auto: spread 1.1697% > 1.0%
+[2026-03-20 11:01:55 UTC] UNSTABLE COIN-00384 PYTH Gate.io↔Binance spread=1.0626% by=system — auto: spread 1.0626% > 1.0%
+[2026-03-20 11:01:58 UTC] UNSTABLE COIN-00075 PYTH KuCoin↔CoinEx spread=1.0556% by=system — auto: spread 1.0556% > 1.0%
+[2026-03-20 13:35:15 UTC] UNSTABLE COIN-00116 WLD KuCoin↔CoinEx spread=1.0069% by=system — auto: spread 1.0069% > 1.0%
+[2026-03-20 13:35:20 UTC] UNSTABLE COIN-00331 WLD Bybit↔Binance spread=1.0709% by=system — auto: spread 1.0709% > 1.0%
+[2026-03-20 13:42:02 UTC] UNSTABLE COIN-00338 ATOM Gate.io↔Bybit spread=0.0999% by=user — manual removal
+[2026-03-20 13:42:30 UTC] UNSTABLE COIN-00425 SHIB CoinEx↔KuCoin spread=0.1364% by=user — manual removal
+[2026-03-20 14:16:21 UTC] UNSTABLE COIN-00135 IMX Bybit↔KuCoin spread=1.0651% by=system — auto: spread 1.0651% > 1.0%
+[2026-03-20 14:19:36 UTC] UNSTABLE COIN-00089 IMX Gate.io↔KuCoin spread=1.1023% by=system — auto: spread 1.1023% > 1.0%
+[2026-03-20 14:20:31 UTC] UNSTABLE COIN-00378 IMX OKX↔KuCoin spread=1.1642% by=system — auto: spread 1.1642% > 1.0%
+[2026-03-20 14:22:52 UTC] UNSTABLE COIN-00033 IMX Binance↔KuCoin spread=1.1023% by=system — auto: spread 1.1023% > 1.0%
+[2026-03-20 14:53:05 UTC] UNSTABLE COIN-00049 BLUR Binance↔KuCoin spread=1.0251% by=system — auto: spread 1.0251% > 1.0%
+[2026-03-20 14:54:49 UTC] UNSTABLE COIN-00041 STX Bybit↔KuCoin spread=1.0200% by=system — auto: spread 1.0200% > 1.0%
+[2026-03-20 14:54:49 UTC] UNSTABLE COIN-00051 BLUR Bybit↔KuCoin spread=1.0199% by=system — auto: spread 1.0199% > 1.0%
+[2026-03-20 18:31:09 UTC] UNSTABLE COIN-00126 BLUR OKX↔KuCoin spread=1.1270% by=system — auto: spread 1.1270% > 1.0%

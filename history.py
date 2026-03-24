@@ -1,13 +1,14 @@
 """
 History Logger — v3
 - Coin IDs: stable COIN-XXXXX per symbol+exchange pair, persisted to disk
-- Pair status: normal | unstable | banned — persisted, never downgraded
+- Pair status: normal | unstable | banned — persisted, supports restore to normal
+- Pinned pairs: immune to auto-unstable, always shown in main view
 - Log files: alert_logs.txt, banned_coins.log, unstable_coins.log, client_actions.log
-- Analytics: excludes banned/unstable pairs; qualified = 0.20% ≤ pct < 0.80%
+- Analytics: excludes banned/unstable pairs; qualified = gross% >= MIN_GROSS (default 0.80%)
 - Alert records include coin_id + pair_key for reliable cross-referencing
 """
 
-import json, os, time, atexit
+import json, os, time, atexit, threading
 from datetime import datetime, timezone, timedelta
 
 BASE_DIR = os.path.dirname(__file__)
@@ -21,13 +22,17 @@ CLIENT_LOG   = os.path.join(BASE_DIR, "client_actions.log")
 COIN_ID_FILE     = os.path.join(DATA_DIR, "coin_ids.json")
 PAIR_STATUS_FILE = os.path.join(DATA_DIR, "pair_status.json")
 AN_EXCL_FILE     = os.path.join(DATA_DIR, "analytics_excluded.json")
+PINNED_FILE      = os.path.join(DATA_DIR, "pinned_pairs.json")
 
 DEDUP_TTL = 600    # 10-min cooldown after alert ends
 GRACE_TTL = 8      # seconds grace before marking ended
 MIN_GROSS = 0.80   # qualified lower bound — alerts below this don't count toward gross
-MAX_GROSS = 100.0  # no effective upper cap
+# MAX_GROSS is intentionally uncapped (all alerts above MIN_GROSS are qualified)
 
 os.makedirs(DATA_DIR, exist_ok=True)
+
+# ── Thread safety ─────────────────────────────────────────────────────────────
+_alerts_lock = threading.RLock()   # protects _active_alerts and _dedup
 
 # ── Alert session state ───────────────────────────────────────────────────────
 _dedup:         dict = {}
@@ -43,6 +48,9 @@ _coin_id_ctr    = 0
 # ── Pair status state (loaded from disk) ─────────────────────────────────────
 _pair_status: dict = {}   # coin_id -> {status, removal_type, removed_at, ...}
 _excluded_ids: set = set()  # coin_ids with status != 'normal'
+
+# ── Pinned pairs (immune to auto-unstable) ────────────────────────────────────
+_pinned_keys: set = set()  # canon_pair_keys that are pinned
 
 # ── Analytics symbol exclusions ───────────────────────────────────────────────
 _an_excl_symbols: set = set()
@@ -98,10 +106,18 @@ def _load_an_exclusions():
 def _save_an_exclusions():
     _save_json(AN_EXCL_FILE, list(_an_excl_symbols))
 
+def _load_pinned():
+    global _pinned_keys
+    _pinned_keys = set(_load_json_safe(PINNED_FILE, []))
+
+def _save_pinned():
+    _save_json(PINNED_FILE, list(_pinned_keys))
+
 # Load everything on import
 _load_coin_ids()
 _load_pair_status()
 _load_an_exclusions()
+_load_pinned()
 
 
 # ═══════════════════════════ COIN IDs ════════════════════════════════════════
@@ -175,8 +191,49 @@ def get_pair_statuses() -> dict:
     return dict(_pair_status)
 
 
+def restore_pair_to_normal(symbol: str, min_ex: str, max_ex: str) -> tuple:
+    """
+    Remove pair from unstable/banned status, restoring it to normal.
+    Returns (coin_id, restored: bool).
+    """
+    coin_id  = get_or_create_coin_id(symbol, min_ex, max_ex)
+    if coin_id not in _pair_status:
+        return coin_id, False
+    ts       = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    pair_key = _canon_pair_key(symbol, min_ex, max_ex)
+    del _pair_status[coin_id]
+    _excluded_ids.discard(coin_id)
+    _save_pair_status()
+    _append_file(UNSTABLE_LOG,
+                 f"[{ts} UTC] RESTORED {coin_id} {symbol} {min_ex}↔{max_ex} — user restore")
+    return coin_id, True
+
+
 def get_coin_id_for_pair(symbol: str, ex_a: str, ex_b: str) -> str:
     return get_or_create_coin_id(symbol, ex_a, ex_b)
+
+
+# ═══════════════════════════ PINNED PAIRS ════════════════════════════════════
+
+def pin_pair(symbol: str, min_ex: str, max_ex: str) -> str:
+    """Pin a pair so it is immune to auto-unstable detection."""
+    key = _canon_pair_key(symbol, min_ex, max_ex)
+    _pinned_keys.add(key)
+    _save_pinned()
+    return key
+
+def unpin_pair(symbol: str, min_ex: str, max_ex: str) -> str:
+    """Remove pin from a pair."""
+    key = _canon_pair_key(symbol, min_ex, max_ex)
+    _pinned_keys.discard(key)
+    _save_pinned()
+    return key
+
+def is_pair_pinned(symbol: str, min_ex: str, max_ex: str) -> bool:
+    return _canon_pair_key(symbol, min_ex, max_ex) in _pinned_keys
+
+def get_pinned_pairs() -> list:
+    return sorted(_pinned_keys)
 
 
 # ═══════════════════════════ ANALYTICS EXCLUSIONS ════════════════════════════
@@ -289,141 +346,142 @@ def record_alerts(scan_data: dict):
     new_records = []
     seen_keys   = set()
 
-    for sym, d in scan_data.items():
-        a = d.get("analysis", {})
+    with _alerts_lock:
+        for sym, d in scan_data.items():
+            a = d.get("analysis", {})
 
-        # ── Spread ──────────────────────────────────────────────────────────
-        if a.get("spread_alert"):
-            buy_ex     = a.get("min_exchange", "?")
-            sell_ex    = a.get("max_exchange", "?")
-            dedup_key  = _alert_dedup_key(sym, "spread", buy_ex, sell_ex)
-            spread_pct = round(a.get("spread_pct", 0), 5)
-            pair_key   = _canon_pair_key(sym, buy_ex, sell_ex)
-            coin_id    = get_or_create_coin_id(sym, buy_ex, sell_ex)
-            seen_keys.add(dedup_key)
+            # ── Spread ──────────────────────────────────────────────────────────
+            if a.get("spread_alert"):
+                buy_ex     = a.get("min_exchange", "?")
+                sell_ex    = a.get("max_exchange", "?")
+                dedup_key  = _alert_dedup_key(sym, "spread", buy_ex, sell_ex)
+                spread_pct = round(a.get("spread_pct", 0), 5)
+                pair_key   = _canon_pair_key(sym, buy_ex, sell_ex)
+                coin_id    = get_or_create_coin_id(sym, buy_ex, sell_ex)
+                seen_keys.add(dedup_key)
 
-            # Skip recording if this pair is already banned or unstable
-            coin_status = _pair_status.get(coin_id, {}).get("status", "normal")
-            if coin_status in ("banned", "unstable"):
+                # Skip recording if this pair is already banned or unstable
+                coin_status = _pair_status.get(coin_id, {}).get("status", "normal")
+                if coin_status in ("banned", "unstable"):
+                    continue
+
+                if dedup_key in _active_alerts and not _active_alerts[dedup_key].get("ended"):
+                    al = _active_alerts[dedup_key]
+                    al["last_seen_ts"] = now
+                    al["max_pct"]      = max(al["max_pct"], spread_pct)
+                    al["min_pct"]      = min(al["min_pct"], spread_pct)
+                    al["current_pct"]  = spread_pct
+                    al["buy_price"]    = a.get("min_price")
+                    al["sell_price"]   = a.get("max_price")
+                else:
+                    last_end = _dedup.get(dedup_key, 0)
+                    if now - last_end >= DEDUP_TTL:
+                        alert_id = _next_id()
+                        trust    = _worst_trust(a.get("trust_map", {}), buy_ex, sell_ex)
+                        _active_alerts[dedup_key] = {
+                            "id":            alert_id, "coin_id": coin_id,
+                            "symbol":        sym,      "type":    "spread",
+                            "key":           dedup_key,"pair_key":pair_key,
+                            "start_ts":      now,      "last_seen_ts": now,
+                            "min_pct":       spread_pct, "max_pct": spread_pct,
+                            "current_pct":   spread_pct,
+                            "buy_exchange":  buy_ex,   "sell_exchange": sell_ex,
+                            "buy_price":     a.get("min_price"),
+                            "sell_price":    a.get("max_price"),
+                            "trust_level":   trust,    "ended": False, "end_ts": None,
+                        }
+                        new_records.append({
+                            "ts": now, "alert_id": alert_id, "coin_id": coin_id,
+                            "pair_key": pair_key, "symbol": sym, "type": "spread",
+                            "spread_pct": spread_pct,
+                            "buy_exchange": buy_ex,   "sell_exchange": sell_ex,
+                            "buy_price":    a.get("min_price"),
+                            "sell_price":   a.get("max_price"),
+                            "potential_pct": spread_pct, "funding_diff": None,
+                            "short_exchange": None, "long_exchange": None,
+                            "annual_diff_pct": None, "trust_level": trust,
+                        })
+                        _session_alerts += 1
+                        ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                        _append_file(LOG_FILE,
+                            f"[{ts_s} UTC] [{alert_id}] [{coin_id}] NEW SPREAD  {sym:<6} "
+                            f"+{spread_pct:.4f}%  LONG {buy_ex} @ ${a.get('min_price',0):.4f}  "
+                            f"SHORT {sell_ex} @ ${a.get('max_price',0):.4f}  trust={trust}")
+
+            # ── Funding ─────────────────────────────────────────────────────────
+            for opp in a.get("funding_opportunities", []):
+                if not opp.get("alert"):
+                    continue
+                short_ex  = opp.get("short_exchange", "?")
+                long_ex   = opp.get("long_exchange",  "?")
+                dedup_key = _alert_dedup_key(sym, "funding", short_ex, long_ex)
+                diff_pct  = round(opp.get("diff_pct", 0), 5)
+                pair_key  = _canon_pair_key(sym, short_ex, long_ex)
+                coin_id   = get_or_create_coin_id(sym, short_ex, long_ex)
+                seen_keys.add(dedup_key)
+
+                # Skip recording if this pair is already banned or unstable
+                coin_status = _pair_status.get(coin_id, {}).get("status", "normal")
+                if coin_status in ("banned", "unstable"):
+                    continue
+
+                if dedup_key in _active_alerts and not _active_alerts[dedup_key].get("ended"):
+                    al = _active_alerts[dedup_key]
+                    al["last_seen_ts"] = now
+                    al["max_pct"]      = max(al["max_pct"], diff_pct)
+                    al["min_pct"]      = min(al["min_pct"], diff_pct)
+                    al["current_pct"]  = diff_pct
+                else:
+                    last_end = _dedup.get(dedup_key, 0)
+                    if now - last_end >= DEDUP_TTL:
+                        annual   = round(diff_pct * (365 * 24 / 8), 2)
+                        alert_id = _next_id()
+                        trust    = opp.get("trust_level", "medium")
+                        _active_alerts[dedup_key] = {
+                            "id":             alert_id, "coin_id":  coin_id,
+                            "symbol":         sym,      "type":     "funding",
+                            "key":            dedup_key,"pair_key": pair_key,
+                            "start_ts":       now,      "last_seen_ts": now,
+                            "min_pct":        diff_pct, "max_pct": diff_pct,
+                            "current_pct":    diff_pct,
+                            "short_exchange": short_ex, "long_exchange": long_ex,
+                            "annual_diff_pct": annual,  "trust_level": trust,
+                            "ended": False, "end_ts": None,
+                        }
+                        new_records.append({
+                            "ts": now, "alert_id": alert_id, "coin_id": coin_id,
+                            "pair_key": pair_key, "symbol": sym, "type": "funding",
+                            "spread_pct": None,
+                            "buy_exchange": None, "sell_exchange": None,
+                            "buy_price": None,    "sell_price": None,
+                            "potential_pct": diff_pct, "funding_diff": diff_pct,
+                            "short_exchange": short_ex, "long_exchange": long_ex,
+                            "annual_diff_pct": annual, "trust_level": trust,
+                        })
+                        _session_alerts += 1
+                        ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                        _append_file(LOG_FILE,
+                            f"[{ts_s} UTC] [{alert_id}] [{coin_id}] NEW FUNDING {sym:<6} "
+                            f"+{diff_pct:.4f}%/8h ({annual:.1f}% annual)  "
+                            f"SHORT {short_ex}  LONG {long_ex}  trust={trust}")
+
+        # ── End stale alerts ─────────────────────────────────────────────────────
+        for key, al in list(_active_alerts.items()):
+            if al.get("ended"):
+                if al.get("end_ts") and now - al["end_ts"] > 7200:
+                    del _active_alerts[key]
                 continue
-
-            if dedup_key in _active_alerts and not _active_alerts[dedup_key].get("ended"):
-                al = _active_alerts[dedup_key]
-                al["last_seen_ts"] = now
-                al["max_pct"]      = max(al["max_pct"], spread_pct)
-                al["min_pct"]      = min(al["min_pct"], spread_pct)
-                al["current_pct"]  = spread_pct
-                al["buy_price"]    = a.get("min_price")
-                al["sell_price"]   = a.get("max_price")
-            else:
-                last_end = _dedup.get(dedup_key, 0)
-                if now - last_end >= DEDUP_TTL:
-                    alert_id = _next_id()
-                    trust    = _worst_trust(a.get("trust_map", {}), buy_ex, sell_ex)
-                    _active_alerts[dedup_key] = {
-                        "id":            alert_id, "coin_id": coin_id,
-                        "symbol":        sym,      "type":    "spread",
-                        "key":           dedup_key,"pair_key":pair_key,
-                        "start_ts":      now,      "last_seen_ts": now,
-                        "min_pct":       spread_pct, "max_pct": spread_pct,
-                        "current_pct":   spread_pct,
-                        "buy_exchange":  buy_ex,   "sell_exchange": sell_ex,
-                        "buy_price":     a.get("min_price"),
-                        "sell_price":    a.get("max_price"),
-                        "trust_level":   trust,    "ended": False, "end_ts": None,
-                    }
-                    new_records.append({
-                        "ts": now, "alert_id": alert_id, "coin_id": coin_id,
-                        "pair_key": pair_key, "symbol": sym, "type": "spread",
-                        "spread_pct": spread_pct,
-                        "buy_exchange": buy_ex,   "sell_exchange": sell_ex,
-                        "buy_price":    a.get("min_price"),
-                        "sell_price":   a.get("max_price"),
-                        "potential_pct": spread_pct, "funding_diff": None,
-                        "short_exchange": None, "long_exchange": None,
-                        "annual_diff_pct": None, "trust_level": trust,
-                    })
-                    _session_alerts += 1
-                    ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                    _append_file(LOG_FILE,
-                        f"[{ts_s} UTC] [{alert_id}] [{coin_id}] NEW SPREAD  {sym:<6} "
-                        f"+{spread_pct:.4f}%  LONG {buy_ex} @ ${a.get('min_price',0):.4f}  "
-                        f"SHORT {sell_ex} @ ${a.get('max_price',0):.4f}  trust={trust}")
-
-        # ── Funding ─────────────────────────────────────────────────────────
-        for opp in a.get("funding_opportunities", []):
-            if not opp.get("alert"):
-                continue
-            short_ex  = opp.get("short_exchange", "?")
-            long_ex   = opp.get("long_exchange",  "?")
-            dedup_key = _alert_dedup_key(sym, "funding", short_ex, long_ex)
-            diff_pct  = round(opp.get("diff_pct", 0), 5)
-            pair_key  = _canon_pair_key(sym, short_ex, long_ex)
-            coin_id   = get_or_create_coin_id(sym, short_ex, long_ex)
-            seen_keys.add(dedup_key)
-
-            # Skip recording if this pair is already banned or unstable
-            coin_status = _pair_status.get(coin_id, {}).get("status", "normal")
-            if coin_status in ("banned", "unstable"):
-                continue
-
-            if dedup_key in _active_alerts and not _active_alerts[dedup_key].get("ended"):
-                al = _active_alerts[dedup_key]
-                al["last_seen_ts"] = now
-                al["max_pct"]      = max(al["max_pct"], diff_pct)
-                al["min_pct"]      = min(al["min_pct"], diff_pct)
-                al["current_pct"]  = diff_pct
-            else:
-                last_end = _dedup.get(dedup_key, 0)
-                if now - last_end >= DEDUP_TTL:
-                    annual   = round(diff_pct * (365 * 24 / 8), 2)
-                    alert_id = _next_id()
-                    trust    = opp.get("trust_level", "medium")
-                    _active_alerts[dedup_key] = {
-                        "id":             alert_id, "coin_id":  coin_id,
-                        "symbol":         sym,      "type":     "funding",
-                        "key":            dedup_key,"pair_key": pair_key,
-                        "start_ts":       now,      "last_seen_ts": now,
-                        "min_pct":        diff_pct, "max_pct": diff_pct,
-                        "current_pct":    diff_pct,
-                        "short_exchange": short_ex, "long_exchange": long_ex,
-                        "annual_diff_pct": annual,  "trust_level": trust,
-                        "ended": False, "end_ts": None,
-                    }
-                    new_records.append({
-                        "ts": now, "alert_id": alert_id, "coin_id": coin_id,
-                        "pair_key": pair_key, "symbol": sym, "type": "funding",
-                        "spread_pct": None,
-                        "buy_exchange": None, "sell_exchange": None,
-                        "buy_price": None,    "sell_price": None,
-                        "potential_pct": diff_pct, "funding_diff": diff_pct,
-                        "short_exchange": short_ex, "long_exchange": long_ex,
-                        "annual_diff_pct": annual, "trust_level": trust,
-                    })
-                    _session_alerts += 1
-                    ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                    _append_file(LOG_FILE,
-                        f"[{ts_s} UTC] [{alert_id}] [{coin_id}] NEW FUNDING {sym:<6} "
-                        f"+{diff_pct:.4f}%/8h ({annual:.1f}% annual)  "
-                        f"SHORT {short_ex}  LONG {long_ex}  trust={trust}")
-
-    # ── End stale alerts ─────────────────────────────────────────────────────
-    for key, al in list(_active_alerts.items()):
-        if al.get("ended"):
-            if al.get("end_ts") and now - al["end_ts"] > 7200:
-                del _active_alerts[key]
-            continue
-        if key not in seen_keys and now - al["last_seen_ts"] > GRACE_TTL:
-            al["ended"]  = True
-            al["end_ts"] = now
-            _dedup[key]  = now
-            dur = round(now - al["start_ts"])
-            ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-            _append_file(LOG_FILE,
-                f"[{ts_s} UTC] [{al['id']}] [{al.get('coin_id','?')}] ENDED   "
-                f"{al['symbol']:<6} {al['type']:<8} duration={dur}s  "
-                f"max={al['max_pct']:.4f}%  min={al['min_pct']:.4f}%  "
-                f"range={al['max_pct']-al['min_pct']:.4f}%")
+            if key not in seen_keys and now - al["last_seen_ts"] > GRACE_TTL:
+                al["ended"]  = True
+                al["end_ts"] = now
+                _dedup[key]  = now
+                dur = round(now - al["start_ts"])
+                ts_s = datetime.fromtimestamp(now, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                _append_file(LOG_FILE,
+                    f"[{ts_s} UTC] [{al['id']}] [{al.get('coin_id','?')}] ENDED   "
+                    f"{al['symbol']:<6} {al['type']:<8} duration={dur}s  "
+                    f"max={al['max_pct']:.4f}%  min={al['min_pct']:.4f}%  "
+                    f"range={al['max_pct']-al['min_pct']:.4f}%")
 
     if new_records:
         records.extend(new_records)
@@ -435,13 +493,14 @@ def record_alerts(scan_data: dict):
 def get_active_alerts():
     now = time.time()
     active, unstable = [], []
-    for key, al in _active_alerts.items():
-        if al.get("ended"):
-            continue
-        age  = now - al["start_ts"]
-        data = {**al, "age_s": round(age),
-                "range_pct": round(al["max_pct"] - al["min_pct"], 5)}
-        (unstable if age > 900 else active).append(data)
+    with _alerts_lock:
+        for key, al in _active_alerts.items():
+            if al.get("ended"):
+                continue
+            age  = now - al["start_ts"]
+            data = {**al, "age_s": round(age),
+                    "range_pct": round(al["max_pct"] - al["min_pct"], 5)}
+            (unstable if age > 900 else active).append(data)
     return active, unstable
 
 
@@ -475,7 +534,7 @@ def compute_analytics(records: list,
     Returns analytics dict.
     Excluded: pairs whose coin_id is in _excluded_ids (status unstable/banned).
     Also excludes symbols in _an_excl_symbols.
-    Qualified: MIN_GROSS (0.20%) ≤ potential_pct < MAX_GROSS (0.80%).
+    Qualified: potential_pct >= MIN_GROSS (default 0.80%), no upper cap.
     """
     # Build excluded pair_keys lookup
     excl_pair_keys = {
@@ -512,7 +571,7 @@ def compute_analytics(records: list,
     active   = [r for r in records if r["_pair_status"] == "normal"]
     excluded = [r for r in records if r["_pair_status"] != "normal"]
 
-    qualified    = [r for r in active if MIN_GROSS <= (r.get("potential_pct") or 0) < MAX_GROSS]
+    qualified    = [r for r in active if (r.get("potential_pct") or 0) >= MIN_GROSS]
     total_pot    = sum(r.get("potential_pct", 0) or 0 for r in qualified)
 
     # By symbol — include excluded rows but tag them
@@ -533,7 +592,7 @@ def compute_analytics(records: list,
             by_symbol[sym]["pair_status"]   = r["_pair_status"]
             by_symbol[sym]["removal_type"]  = r["_removal_type"]
         else:
-            if MIN_GROSS <= p < MAX_GROSS:
+            if p >= MIN_GROSS:
                 by_symbol[sym]["total_pct"] = round(by_symbol[sym]["total_pct"] + p, 5)
                 by_symbol[sym]["qualified"] += 1
             by_symbol[sym]["best_pct"] = round(max(by_symbol[sym]["best_pct"], p), 5)
@@ -549,7 +608,7 @@ def compute_analytics(records: list,
              else f"{r.get('long_exchange','?')} / {r.get('short_exchange','?')}")
         by_pair.setdefault(k, {"count": 0, "total_pct": 0})["count"] += 1
         p = r.get("potential_pct", 0) or 0
-        if MIN_GROSS <= p < MAX_GROSS:
+        if p >= MIN_GROSS:
             by_pair[k]["total_pct"] = round(by_pair[k]["total_pct"] + p, 5)
 
     by_trust: dict = {}
@@ -563,7 +622,7 @@ def compute_analytics(records: list,
         buckets.setdefault(hour, {"time": hour, "count": 0, "potential": 0})
         buckets[hour]["count"] += 1
         p = r.get("potential_pct", 0) or 0
-        if MIN_GROSS <= p < MAX_GROSS:
+        if p >= MIN_GROSS:
             buckets[hour]["potential"] = round(buckets[hour]["potential"] + p, 5)
 
     timeline = sorted(buckets.values(), key=lambda x: x["time"])
@@ -577,7 +636,6 @@ def compute_analytics(records: list,
         "total_potential_pct": round(total_pot, 4),
         "avg_potential_pct":   round(total_pot / len(qualified), 4) if qualified else 0,
         "min_gross_threshold": MIN_GROSS,
-        "max_gross_threshold": MAX_GROSS,
         "by_symbol":    dict(sorted(by_symbol.items(),
                              key=lambda x: x[1]["total_pct"], reverse=True)),
         "by_type":             by_type,
@@ -594,7 +652,7 @@ def _empty_analytics() -> dict:
     return {
         "total_alerts": 0, "active_alerts": 0, "excluded_alerts": 0,
         "qualified_alerts": 0, "total_potential_pct": 0, "avg_potential_pct": 0,
-        "min_gross_threshold": MIN_GROSS, "max_gross_threshold": MAX_GROSS,
+        "min_gross_threshold": MIN_GROSS,
         "by_symbol": {}, "by_type": {"spread": 0, "funding": 0}, "by_trust": {},
         "by_exchange_pair": {}, "timeline": [], "best_opportunity": None,
         "records": [], "analytics_excluded": list(_an_excl_symbols),

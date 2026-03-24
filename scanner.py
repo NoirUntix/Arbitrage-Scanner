@@ -160,14 +160,20 @@ async def fetch_kucoin(s, sym):
 
 
 async def fetch_bitget(s, sym):
-    t = sym + "USDT_UMCBL"
+    t = sym + "USDT"
     try:
-        async with s.get(f"https://api.bitget.com/api/mix/v1/market/ticker?symbol={t}", timeout=aiohttp.ClientTimeout(total=4)) as r:
+        async with s.get(f"https://api.bitget.com/api/v2/mix/market/ticker?symbol={t}&productType=USDT-FUTURES", timeout=aiohttp.ClientTimeout(total=4)) as r:
             d = await r.json()
-        price = float(d["data"]["last"])
-        async with s.get(f"https://api.bitget.com/api/mix/v1/market/current-fundRate?symbol={t}", timeout=aiohttp.ClientTimeout(total=4)) as r:
+        ticker_list = d.get("data") or []
+        if not ticker_list:
+            return PerpData("Bitget", sym, None, None, 8, 0, "medium")
+        price = float(ticker_list[0]["lastPr"])
+        async with s.get(f"https://api.bitget.com/api/v2/mix/market/current-fund-rate?symbol={t}&productType=USDT-FUTURES", timeout=aiohttp.ClientTimeout(total=4)) as r:
             df = await r.json()
-        fr = float(df["data"]["fundingRate"]) * 100
+        rate_list = df.get("data") or []
+        if not rate_list:
+            return PerpData("Bitget", sym, price, None, 8, time.time(), "medium")
+        fr = float(rate_list[0]["fundingRate"]) * 100
         return PerpData("Bitget", sym, price, fr, 8, time.time(), "medium")
     except Exception as e:
         log.debug(f"Bitget {sym}: {e}")

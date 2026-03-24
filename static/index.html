@@ -106,6 +106,10 @@ select{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);pa
 .action-btn.ban-btn:hover{background:rgba(220,38,38,.25)}
 .action-btn.unban-btn{background:var(--gbg);border-color:var(--gbr);color:var(--green)}
 .action-btn.unban-btn:hover{background:rgba(22,163,74,.25)}
+.action-btn.pin-btn{background:var(--pbg);border-color:var(--pbr);color:var(--purple)}
+.action-btn.pin-btn:hover{background:rgba(168,85,247,.2)}
+.action-btn.unpin-btn{background:var(--pbg);border-color:var(--pbr);color:var(--purple)}
+.action-btn.unpin-btn:hover{background:rgba(168,85,247,.2)}
 
 /* ── TABLE ── */
 .tw{overflow-x:auto}
@@ -507,6 +511,10 @@ const bannedItems = new Map();
 const serverUnstableKeys = new Set();
 // autoUnstableKeys: local detection spread>1%, rebuilt each scan
 const autoUnstableKeys = new Set();
+// pinnedKeys: pinned pairs — immune to auto-unstable, always shown in main view
+const pinnedKeys = new Set();
+// persistentUnstable: last known metadata for excluded pairs (persists across scan gaps)
+const persistentUnstable = new Map(); // key -> {symbol, min_ex, max_ex, spread_pct, ...}
 
 // Stable tracking
 const stableMap   = new Map();  // key -> first_seen ms
@@ -596,7 +604,7 @@ function rebuildAutoUnstable() {
     const a = d.analysis; if (!a) return;
     if ((a.spread_pct || 0) > 1.0) {
       const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
-      if (!bannedKeys.has(k)) autoUnstableKeys.add(k);
+      if (!bannedKeys.has(k) && !pinnedKeys.has(k)) autoUnstableKeys.add(k);
     }
   });
 }
@@ -613,12 +621,29 @@ function _parseKey(key) {
   return { sym, minEx, maxEx };
 }
 
+// Convert server canonical key (SYM|EX_A|EX_B) to UI key (SYM_EX_A_EX_B)
+function _canonKeyToUiKey(canonKey) {
+  const parts = canonKey.split('|');
+  return parts.length >= 3 ? `${parts[0]}_${parts[1]}_${parts[2]}` : canonKey;
+}
+
 function manualExclude(key) {
   if (manuallyExcluded.has(key) || bannedKeys.has(key)) return; // idempotent
   manuallyExcluded.add(key);
   // Get current spread for this key from allData
   const { sym, minEx, maxEx } = _parseKey(key);
-  const sp = allData[sym]?.analysis?.spread_pct || 0;
+  const d = allData[sym];
+  const sp = d?.analysis?.spread_pct || 0;
+  const minPrice = d?.analysis?.min_price || 0;
+  const maxPrice = d?.analysis?.max_price || 0;
+  const trust = d ? worstTrust(d.analysis?.trust_map, d.analysis?.min_exchange, d.analysis?.max_exchange) : 'medium';
+  // Store in persistentUnstable so it remains visible even if pair leaves scan data
+  persistentUnstable.set(key, {
+    symbol: sym, key, min_ex: minEx, max_ex: maxEx,
+    spread_pct: sp, min_price: minPrice, max_price: maxPrice,
+    mid_price: (minPrice && maxPrice) ? (minPrice + maxPrice) / 2 : null,
+    trust, removalType: 'manual',
+  });
   // Persist to server
   fetch('/api/action/unstable', {
     method: 'POST', headers: {'Content-Type':'application/json'},
@@ -637,7 +662,9 @@ function banItem(key, sym, minEx, maxEx, spreadPct, minPrice, maxPrice, trust) {
   manuallyExcluded.delete(key);
   serverUnstableKeys.delete(key);
   autoUnstableKeys.delete(key);
+  pinnedKeys.delete(key);
   lockedKeys.delete(key);
+  persistentUnstable.delete(key);
   bannedItems.set(key, {
     symbol: sym, min_ex: minEx, max_ex: maxEx,
     spread_pct: spreadPct, min_price: minPrice, max_price: maxPrice,
@@ -662,6 +689,13 @@ function unbanItem(key) {
   // Move back to server unstable (so it stays excluded from analytics but visible in unstable tab)
   if (item) {
     serverUnstableKeys.add(key);
+    persistentUnstable.set(key, {
+      symbol: item.symbol, key, min_ex: item.min_ex, max_ex: item.max_ex,
+      spread_pct: item.spread_pct || 0, min_price: item.min_price || 0,
+      max_price: item.max_price || 0,
+      mid_price: (item.min_price && item.max_price) ? (item.min_price + item.max_price) / 2 : null,
+      trust: item.trust || 'medium', removalType: 'system',
+    });
     fetch('/api/action/unstable', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({symbol: item.symbol, min_ex: item.min_ex, max_ex: item.max_ex,
@@ -682,6 +716,49 @@ function updateBanTab() {
   btn.textContent = cnt > 0 ? `Ban List (${cnt})` : 'Ban List';
   btn.classList.toggle('has-items', cnt > 0);
   document.getElementById('s-banned').textContent = cnt;
+}
+
+function restoreItem(key) {
+  const { sym, minEx, maxEx } = _parseKey(key);
+  manuallyExcluded.delete(key);
+  serverUnstableKeys.delete(key);
+  autoUnstableKeys.delete(key);
+  pinnedKeys.add(key);   // pin it so auto-unstable doesn't immediately re-hide it
+  persistentUnstable.delete(key);
+  // Restore on server + pin
+  fetch('/api/action/restore', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx}),
+  }).catch(() => {});
+  fetch('/api/action/pin', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx}),
+  }).catch(() => {});
+  renderSpreads();
+  if (document.getElementById('tab-unstable').classList.contains('on')) renderUnstable();
+  updateCounters();
+  if (document.querySelector('.tab[data-t="analytics"]')?.classList.contains('on')) loadAnalytics();
+}
+
+function pinItem(key) {
+  pinnedKeys.add(key);
+  autoUnstableKeys.delete(key);
+  const { sym, minEx, maxEx } = _parseKey(key);
+  fetch('/api/action/pin', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx}),
+  }).catch(() => {});
+  renderSpreads();
+}
+
+function unpinItem(key) {
+  pinnedKeys.delete(key);
+  const { sym, minEx, maxEx } = _parseKey(key);
+  fetch('/api/action/unpin', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({symbol: sym, min_ex: minEx, max_ex: maxEx}),
+  }).catch(() => {});
+  renderSpreads();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -890,29 +967,52 @@ function renderUnstable() {
   const grid  = document.getElementById('unstable-grid');
   const linfo = document.getElementById('locked-info');
   const unstableRows = [], lockedRows = [];
+  const seen = new Set();
 
+  // First pass: live scan data
   Object.values(allData).forEach(d => {
     const a = d.analysis; if (!a) return;
     const k = `${d.symbol}_${a.min_exchange}_${a.max_exchange}`;
     if (bannedKeys.has(k)) return;
     if (!isUnstable(k) && !isLocked(k)) return;
+    seen.add(k);
 
-    // Determine removal type label
-    let remType = 'system';
-    if (manuallyExcluded.has(k))      remType = 'manual';
-    else if (serverUnstableKeys.has(k)) remType = 'system';
-    else if (autoUnstableKeys.has(k))   remType = 'system';
+    // Update persistentUnstable with fresh live data
+    if (isUnstable(k)) {
+      let remType = 'system';
+      if (manuallyExcluded.has(k))        remType = 'manual';
+      else if (serverUnstableKeys.has(k)) remType = 'system';
+      else if (autoUnstableKeys.has(k))   remType = 'system';
+      const midPrice = (a.min_price && a.max_price) ? (a.min_price + a.max_price) / 2 : null;
+      const trust    = worstTrust(a.trust_map, a.min_exchange, a.max_exchange);
+      persistentUnstable.set(k, {
+        symbol: d.symbol, key: k, min_ex: a.min_exchange, max_ex: a.max_exchange,
+        spread_pct: a.spread_pct, min_price: a.min_price, max_price: a.max_price,
+        mid_price: midPrice, trust, removalType: remType,
+      });
+    }
 
+    const existing = persistentUnstable.get(k) || {};
     const midPrice = (a.min_price && a.max_price) ? (a.min_price + a.max_price) / 2 : null;
     const trust    = worstTrust(a.trust_map, a.min_exchange, a.max_exchange);
+    let remType = existing.removalType || 'system';
+    if (manuallyExcluded.has(k)) remType = 'manual';
     const item = {
       symbol: d.symbol, key: k, min_ex: a.min_exchange, max_ex: a.max_exchange,
       spread_pct: a.spread_pct, min_price: a.min_price, max_price: a.max_price,
       mid_price: midPrice, trust, removalType: remType,
     };
-
     if (isLocked(k)) lockedRows.push(item);
     else             unstableRows.push(item);
+  });
+
+  // Second pass: persistent entries no longer in live scan (pair disappeared)
+  persistentUnstable.forEach((item, k) => {
+    if (seen.has(k)) return;
+    if (bannedKeys.has(k)) { persistentUnstable.delete(k); return; }
+    // Show with stale marker
+    const row = { ...item, removalType: item.removalType || 'system', stale: true };
+    unstableRows.push(row);
   });
 
   linfo.style.display = lockedRows.length ? '' : 'none';
@@ -932,9 +1032,10 @@ function renderUnstable() {
     const remBadge = r.removalType === 'manual'
       ? `<span class="badge manual-badge">Manual Removal</span>`
       : `<span class="badge system-badge">System Removal</span>`;
-    const timeBadge = locked
+    const staleBadge = r.stale ? `<span class="badge" style="background:rgba(100,100,100,.15);color:var(--t3);border:1px solid var(--b2)">offline</span>` : '';
+    const timeBadge = r.stale ? '' : (locked
       ? `<span class="badge locked-badge">LOCKED ${alive}</span>`
-      : `<span class="badge unstable-badge">${alive}</span>`;
+      : `<span class="badge unstable-badge">${alive || '—'}</span>`);
     const excl = `<div style="font-size:9px;color:var(--t3);margin-top:4px">Excluded from analytics</div>`;
     const sym  = r.symbol.replace(/'/g,"\\'");
     const minEx = (r.min_ex||'').replace(/'/g,"\\'");
@@ -947,7 +1048,7 @@ function renderUnstable() {
     return `<div class="${cls}">
       <div class="${cls}-hdr">
         <span class="coin">${r.symbol}</span>
-        <div style="display:flex;gap:5px;align-items:center">${remBadge}${timeBadge}</div>
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">${remBadge}${staleBadge}${timeBadge}</div>
       </div>
       <div class="opp-rows">
         <div class="opp-row"><span class="opp-rl">Long on</span><a href="${minUrl}" target="_blank" rel="noopener"><span class="exbadge">${r.min_ex} +</span></a></div>
@@ -959,6 +1060,7 @@ function renderUnstable() {
       </div>
       ${excl}
       <div class="card-actions">
+        <button class="action-btn restore" onclick="restoreItem('${r.key}')">↩ Restore to Main</button>
         <button class="action-btn ban-btn" onclick="banItem('${r.key}','${sym}','${minEx}','${maxEx}',${spPct},${minP},${maxP},'${tr}')">⊗ Ban permanently</button>
       </div>
     </div>`;
@@ -1542,17 +1644,33 @@ async function fetchData() {
     const now = Date.now();
     if (now - _lastStatusPoll > 5000) {
       _lastStatusPoll = now;
-      fetch('/api/pair_statuses').then(r => r.json()).then(ps => {
+      Promise.all([
+        fetch('/api/pair_statuses').then(r => r.json()),
+        fetch('/api/pinned_pairs').then(r => r.json()),
+      ]).then(([ps, pp]) => {
+        // Sync pinned pairs
+        (pp.pinned || []).forEach(canonKey => {
+          pinnedKeys.add(_canonKeyToUiKey(canonKey));
+        });
+        // Sync pair statuses
         Object.values(ps).forEach(v => {
           const key = `${v.symbol}_${v.min_exchange}_${v.max_exchange}`;
           if (v.status === 'unstable' && !bannedKeys.has(key)) {
             serverUnstableKeys.add(key);
-            // If server says unstable by system, ensure not in manuallyExcluded
-            // (system removal takes over — idempotent)
+            // Populate persistentUnstable so pair stays visible even if absent from scan
+            if (!persistentUnstable.has(key)) {
+              persistentUnstable.set(key, {
+                symbol: v.symbol, key, min_ex: v.min_exchange, max_ex: v.max_exchange,
+                spread_pct: v.spread_pct_at_removal || 0, min_price: 0, max_price: 0,
+                mid_price: null, trust: 'medium',
+                removalType: v.removal_type === 'manual' ? 'manual' : 'system',
+              });
+            }
           }
           if (v.status === 'banned') {
             bannedKeys.add(key);
             serverUnstableKeys.delete(key);
+            persistentUnstable.delete(key);
             if (!bannedItems.has(key)) {
               bannedItems.set(key, {
                 symbol: v.symbol, min_ex: v.min_exchange, max_ex: v.max_exchange,

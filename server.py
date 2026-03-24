@@ -7,7 +7,8 @@ from flask import Flask, jsonify, send_from_directory, request
 from scanner import scan_all, EXCHANGE_META, WITHDRAWAL_STATUS
 from history import (
     record_alerts, load_range, compute_analytics, get_active_alerts,
-    mark_pair_status, get_pair_statuses,
+    mark_pair_status, get_pair_statuses, restore_pair_to_normal,
+    pin_pair, unpin_pair, is_pair_pinned, get_pinned_pairs,
     exclude_analytics_symbol, unexclude_analytics_symbol, get_analytics_excluded,
     log_client_action, get_log_tail, get_all_logs_summary,
 )
@@ -143,12 +144,16 @@ def _check_kucoin():
 
 def _check_bitget():
     issues, details = [], []
-    code, body = _fetch("https://api.bitget.com/api/mix/v1/market/ticker?symbol=BTCUSDT_UMCBL&productType=umcbl", 5)
+    code, body = _fetch("https://api.bitget.com/api/v2/mix/market/ticker?symbol=BTCUSDT&productType=USDT-FUTURES", 5)
     if code == 200:
         try:
-            vol = float(json.loads(body).get("data", {}).get("usdtVolume", 0))
-            details.append(f"24h vol: ${vol/1e6:.0f}M")
-            if vol < 30_000_000: issues.append("Low volume — check order book")
+            data_list = json.loads(body).get("data") or []
+            if data_list:
+                vol = float(data_list[0].get("usdtVolume", 0))
+                details.append(f"24h vol: ${vol/1e6:.0f}M")
+                if vol < 30_000_000: issues.append("Low volume — check order book")
+            else:
+                issues.append("Empty ticker response")
         except Exception: pass
     else: issues.append("Futures API unreachable")
     issues.append("Mid-tier liquidity — verify depth before large trades")
@@ -207,7 +212,9 @@ def health_refresh_loop():
 # ── Auto-unstable detection ───────────────────────────────────────────────────
 
 def _auto_mark_unstable_if_needed(data: dict):
-    """Mark any pair with spread > UNSTABLE_SPREAD_THRESHOLD as system unstable."""
+    """Mark any pair with spread > UNSTABLE_SPREAD_THRESHOLD as system unstable.
+    Pinned pairs are immune to auto-unstable detection.
+    """
     for sym, d in data.items():
         a  = d.get("analysis", {})
         sp = a.get("spread_pct", 0) or 0
@@ -216,6 +223,9 @@ def _auto_mark_unstable_if_needed(data: dict):
         min_ex = a.get("min_exchange", "")
         max_ex = a.get("max_exchange", "")
         if not min_ex or not max_ex:
+            continue
+        # Skip pinned pairs — they are immune to auto-unstable
+        if is_pair_pinned(sym, min_ex, max_ex):
             continue
         coin_id, changed = mark_pair_status(
             sym, min_ex, max_ex,
@@ -337,6 +347,48 @@ def api_action_ban():
     log_client_action("BAN_PAIR", f"{sym} {min_ex}/{max_ex}",
                       f"coin_id={coin_id} spread={sp:.4f}% by={by}")
     return jsonify({"ok": True, "coin_id": coin_id, "changed": changed})
+
+
+@app.route("/api/action/restore", methods=["POST"])
+def api_action_restore():
+    b      = request.get_json(force=True) or {}
+    sym    = b.get("symbol", "?")
+    min_ex = b.get("min_ex", "?")
+    max_ex = b.get("max_ex", "?")
+
+    coin_id, restored = restore_pair_to_normal(sym, min_ex, max_ex)
+    log_client_action("RESTORE_PAIR", f"{sym} {min_ex}/{max_ex}",
+                      f"coin_id={coin_id} restored={restored}")
+    return jsonify({"ok": True, "coin_id": coin_id, "restored": restored})
+
+
+@app.route("/api/pinned_pairs")
+def api_pinned_pairs():
+    return jsonify({"pinned": get_pinned_pairs()})
+
+
+@app.route("/api/action/pin", methods=["POST"])
+def api_action_pin():
+    b      = request.get_json(force=True) or {}
+    sym    = b.get("symbol", "?")
+    min_ex = b.get("min_ex", "?")
+    max_ex = b.get("max_ex", "?")
+
+    key = pin_pair(sym, min_ex, max_ex)
+    log_client_action("PIN_PAIR", f"{sym} {min_ex}/{max_ex}", f"key={key}")
+    return jsonify({"ok": True, "key": key, "pinned": get_pinned_pairs()})
+
+
+@app.route("/api/action/unpin", methods=["POST"])
+def api_action_unpin():
+    b      = request.get_json(force=True) or {}
+    sym    = b.get("symbol", "?")
+    min_ex = b.get("min_ex", "?")
+    max_ex = b.get("max_ex", "?")
+
+    key = unpin_pair(sym, min_ex, max_ex)
+    log_client_action("UNPIN_PAIR", f"{sym} {min_ex}/{max_ex}", f"key={key}")
+    return jsonify({"ok": True, "key": key, "pinned": get_pinned_pairs()})
 
 
 @app.route("/api/action/exclude_coin", methods=["POST"])
